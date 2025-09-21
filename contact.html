@@ -6,17 +6,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 </head>
+
+<script>
+  const btn = document.getElementById('menuBtn');
+  const nav = document.getElementById('siteNav');
+
+  if (btn && nav) {
+    btn.addEventListener('click', () => {
+      const open = document.body.classList.toggle('nav-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    // ナビをタップしたら自動で閉じる（スマホでの操作感UP）
+    nav.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') {
+        document.body.classList.remove('nav-open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+</script>
+
 <body>
-  <header>
-    <h1>まりおんのホームページ</h1>
-    <nav>
+<header>
+  <div class="header-inner">
+    <h1 class="pop-font">まりおんの創作物置き場</h1>
+
+    <!-- モバイル用メニューボタン -->
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
+      ☰
+    </button>
+
+    <nav id="siteNav">
       <a href="index.html">ホーム</a>
       <a href="about.html">プロフィール</a>
       <a href="gallery.html">ギャラリー</a>
       <a href="app.html">AIアプリ</a>
       <a href="contact.html" class="active">お問い合わせ</a>
     </nav>
-  </header>
+  </div>
+</header>
+
 
   <main>
     <h2>お問い合わせ</h2>
