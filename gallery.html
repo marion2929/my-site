@@ -24,7 +24,7 @@
     <nav id="siteNav">
       <a href="index.html">ホーム</a>
       <a href="about.html">プロフィール</a>
-      <a href="gallery.html class="active"">ギャラリー</a>
+      <a href="gallery.html" class="active">ギャラリー</a>
       <a href="music.html">音楽</a>
       <a href="app.html">AIアプリ</a>
       <a href="contact.html">お問い合わせ</a>
@@ -63,12 +63,17 @@
 </main>
   <footer>
     <p>© 2025 まりおん All rights reserved.</p>
-  </footer>
+<footer>
+  <p>© 2025 まりおん All rights reserved.</p>
+</footer>
+
 <!-- 画像モーダル（1個あればOK） -->
 <div class="image-modal" id="imgModal" aria-hidden="true">
   <button class="close" id="imgClose" aria-label="閉じる">×</button>
   <img id="imgLarge" alt="">
+</div>
 
+<!-- スマホ用メニュー開閉 -->
 <script>
   const btn = document.getElementById('menuBtn');
   const nav = document.getElementById('siteNav');
@@ -79,7 +84,6 @@
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
 
-    // ナビをタップしたら自動で閉じる（スマホでの操作感UP）
     nav.addEventListener('click', (e) => {
       if (e.target.tagName === 'A') {
         document.body.classList.remove('nav-open');
@@ -88,15 +92,15 @@
     });
   }
 </script>
+
+<!-- 画像拡大（このページは .gallery じゃなくカテゴリ一覧なので、不要なら削除OK） -->
 <script>
   const modal = document.getElementById('imgModal');
   const modalImg = document.getElementById('imgLarge');
   const closeBtn = document.getElementById('imgClose');
 
-  // ギャラリー内の画像を全部ターゲットに
   document.querySelectorAll('.gallery img').forEach(img => {
     img.addEventListener('click', () => {
-      // data-full があれば大きい方、なければそのまま
       modalImg.src = img.dataset.full || img.src;
       modalImg.alt = img.alt || '';
       modal.classList.add('open');
@@ -104,16 +108,14 @@
     });
   });
 
-  // 閉じる：×ボタン / 背景クリック / ESCキー
-  closeBtn.addEventListener('click', () => closeModal());
-  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-
   function closeModal() {
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     modalImg.src = '';
   }
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 </script>
 
 </div>
