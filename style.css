@@ -60,3 +60,99 @@ footer { background: #333; color: #fff; text-align: center; padding: 12px; font-
   border: none; border-radius: 999px;
   width: 36px; height: 36px; font-size: 20px; cursor: pointer;
 }
+/* === ベース（共通） ===================================== */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  /* 読みやすい流体タイポグラフィ：14px〜18pxの範囲で自動調整 */
+  font-family: Arial, sans-serif;
+  font-size: clamp(14px, 2.4vw, 18px);
+  background: #f6f7fb;
+  color: #111;
+}
+img { max-width: 100%; height: auto; display: block; }
+
+/* ヘッダー */
+header { background: #4CAF50; color: #fff; }
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+header h1 {
+  margin: 0;
+  font-size: clamp(20px, 4.5vw, 32px);
+}
+
+/* ナビ（デスクトップ初期） */
+nav { margin-left: auto; display: flex; gap: 12px; }
+nav a {
+  color: #fff; text-decoration: none; font-weight: bold;
+  padding: 6px 8px; border-radius: 6px;
+}
+nav a:hover { background: rgba(255,255,255,.15); }
+nav .active { text-decoration: underline; }
+
+/* メニューボタン（デスクトップでは非表示） */
+.menu-btn {
+  display: none;
+  background: rgba(255,255,255,.15);
+  color: #fff; border: none; border-radius: 6px;
+  font-size: 20px; width: 40px; height: 36px; cursor: pointer;
+}
+
+/* 本文とフッター */
+main { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+footer { background:#333; color:#fff; text-align:center; padding:12px; font-size: 14px; }
+
+/* ギャラリー（既存を置換OK） */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* 基本サイズ */
+  gap: 16px;
+  padding: 10px 0;
+}
+.gallery.large { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.card img { width: 100%; }
+
+/* クリック拡大モーダル（前に入れたものを流用） */
+.gallery img { cursor: zoom-in; }
+.image-modal { position: fixed; inset: 0; background: rgba(0,0,0,.8); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 1000; }
+.image-modal.open { display: flex; }
+.image-modal img { max-width: 90vw; max-height: 85vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+.image-modal .close { position: absolute; top: 12px; right: 16px; background: rgba(255,255,255,.9); border: none; border-radius: 999px; width: 36px; height: 36px; font-size: 20px; cursor: pointer; }
+
+/* === スマホ向け（幅 768px 以下） ======================== */
+@media (max-width: 768px) {
+  /* ヘッダーの並び：タイトル左、メニューボタン右、ナビは下に折りたたみ */
+  .header-inner { flex-wrap: wrap; }
+  .menu-btn { display: inline-block; margin-left: auto; }
+  nav {
+    width: 100%;
+    order: 3;                 /* タイトル→ボタン→ナビの順 */
+    display: none;            /* 既定は非表示（ボタンで開く） */
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0 0;
+  }
+  nav a {
+    background: rgba(255,255,255,.1);
+    padding: 10px 12px;
+  }
+
+  /* “開いた状態”のクラスが body に付いたら表示 */
+  body.nav-open nav { display: flex; }
+
+  /* 本文横幅とギャラリーの最小幅を少し小さくして収まりやすく */
+  main { max-width: 680px; }
+  .gallery { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+}
+
+/* === タブレット〜中画面（幅 769〜1024px 目安） ========= */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gallery { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
