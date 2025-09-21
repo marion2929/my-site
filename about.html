@@ -7,26 +7,6 @@
 <link rel="stylesheet" href="style.css">
 </head>
 
-<script>
-  const btn = document.getElementById('menuBtn');
-  const nav = document.getElementById('siteNav');
-
-  if (btn && nav) {
-    btn.addEventListener('click', () => {
-      const open = document.body.classList.toggle('nav-open');
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-
-    // ナビをタップしたら自動で閉じる（スマホでの操作感UP）
-    nav.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A') {
-        document.body.classList.remove('nav-open');
-        btn.setAttribute('aria-expanded', 'false');
-      }
-    });
-  }
-</script>
-
 <body>
 <header>
   <div class="header-inner">
@@ -59,5 +39,26 @@
   <footer>
     <p>© 2025 まりおん All rights reserved.</p>
   </footer>
+
+<script>
+  const btn = document.getElementById('menuBtn');
+  const nav = document.getElementById('siteNav');
+
+  if (btn && nav) {
+    btn.addEventListener('click', () => {
+      const open = document.body.classList.toggle('nav-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    // ナビをタップしたら自動で閉じる（スマホでの操作感UP）
+    nav.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') {
+        document.body.classList.remove('nav-open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+</script>
+
 </body>
 </html>

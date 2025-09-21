@@ -12,26 +12,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 
-<script>
-  const btn = document.getElementById('menuBtn');
-  const nav = document.getElementById('siteNav');
-
-  if (btn && nav) {
-    btn.addEventListener('click', () => {
-      const open = document.body.classList.toggle('nav-open');
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-
-    // ナビをタップしたら自動で閉じる（スマホでの操作感UP）
-    nav.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A') {
-        document.body.classList.remove('nav-open');
-        btn.setAttribute('aria-expanded', 'false');
-      }
-    });
-  }
-</script>
-
 <body>
 <header>
   <div class="header-inner">
@@ -93,9 +73,26 @@
 <div class="image-modal" id="imgModal" aria-hidden="true">
   <button class="close" id="imgClose" aria-label="閉じる">×</button>
   <img id="imgLarge" alt="">
-</div>
-</body>
-</html>
+
+<script>
+  const btn = document.getElementById('menuBtn');
+  const nav = document.getElementById('siteNav');
+
+  if (btn && nav) {
+    btn.addEventListener('click', () => {
+      const open = document.body.classList.toggle('nav-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    // ナビをタップしたら自動で閉じる（スマホでの操作感UP）
+    nav.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') {
+        document.body.classList.remove('nav-open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+</script>
 <script>
   const modal = document.getElementById('imgModal');
   const modalImg = document.getElementById('imgLarge');
@@ -123,3 +120,7 @@
     modalImg.src = '';
   }
 </script>
+
+</div>
+</body>
+</html>

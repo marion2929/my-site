@@ -4,39 +4,20 @@
   <meta charset="utf-8">
   <title>まりおんのサイト | ホーム</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
+  <!-- （任意）Mochiy Pop One を使う場合はフォント読み込みもここに -->
+  <!--
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+  -->
 </head>
-
-<script>
-  const btn = document.getElementById('menuBtn');
-  const nav = document.getElementById('siteNav');
-
-  if (btn && nav) {
-    btn.addEventListener('click', () => {
-      const open = document.body.classList.toggle('nav-open');
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-
-    // ナビをタップしたら自動で閉じる（スマホでの操作感UP）
-    nav.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A') {
-        document.body.classList.remove('nav-open');
-        btn.setAttribute('aria-expanded', 'false');
-      }
-    });
-  }
-</script>
-
 <body>
 
 <header>
   <div class="header-inner">
     <h1 class="pop-font">まりおんの創作物置き場</h1>
-
-    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
-      ☰
-    </button>
-
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">☰</button>
     <nav id="siteNav">
       <a href="index.html" class="active">ホーム</a>
       <a href="about.html">プロフィール</a>
@@ -47,17 +28,35 @@
   </div>
 </header>
 
+<main>
+  <h2>ようこそ！</h2>
+  <p>ここは私の創作物を置くWebサイトです。</p>
+  <img src="images/FADO01.png" alt="景色画像" width="800">
+</main>
 
-  <main>
-    <h2>ようこそ！</h2>
-    <p>ここは私の創作物を置くWebサイトです。</p>
-    <img src="images/FADO01.png" alt="景色画像" width="800">
+<footer>
+  <p>© 2025 まりおん All rights reserved.</p>
+</footer>
 
-  </main>
+<!-- ← ← ← スクリプトはここ（本文のいちばん最後） -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('menuBtn');
+    const nav = document.getElementById('siteNav');
+    if (!btn || !nav) return;
 
-  <footer>
-    <p>© 2025 まりおん All rights reserved.</p>
-  </footer>
+    btn.addEventListener('click', () => {
+      const open = document.body.classList.toggle('nav-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
 
+    nav.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') {
+        document.body.classList.remove('nav-open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
+</script>
 </body>
 </html>
