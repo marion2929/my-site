@@ -11,16 +11,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+
 <header>
   <div class="header-inner">
     <h1 class="pop-font">まりおんの創作物置き場</h1>
-
-    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
-      ☰
-    </button>
-
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">☰</button>
     <nav id="siteNav">
       <a href="index.html">ホーム</a>
       <a href="about.html">プロフィール</a>
@@ -32,13 +28,12 @@
   </div>
 </header>
 
-
 <main>
   <h2>画像ギャラリー</h2>
   <p>カテゴリを選ぶと、そのジャンルの画像一覧ページへ移動します。</p>
 
   <section class="category-grid">
-    <!-- 大人女子（サンプル1枚＋リンク） -->
+    <!-- 大人女子 -->
     <article class="category-card">
       <img src="images/AW/AW01.png" alt="大人女子 サンプル">
       <div class="body">
@@ -48,7 +43,7 @@
       </div>
     </article>
 
-    <!-- 例：和服女子 -->
+    <!-- 和服女子 -->
     <article class="category-card">
       <img src="images/AJW/AJW01.png" alt="和服女子 サンプル">
       <div class="body">
@@ -58,6 +53,7 @@
       </div>
     </article>
 
+    <!-- 女子学生（新規） -->
     <article class="category-card">
       <img src="images/jkjc/jkjc01.png" alt="女子学生 サンプル">
       <div class="body">
@@ -66,19 +62,12 @@
         <a class="btn" href="gallery-student-girl.html">女子学生のページへ</a>
       </div>
     </article>
-
-    <!-- ↑増やすときは <article> をコピペしてタイトル/説明/リンク/サンプル画像を差し替え -->
   </section>
 </main>
-  <footer>
-    <p>© 2025 まりおん All rights reserved.</p>
-</footer>
 
-<!-- 画像モーダル（1個あればOK） -->
-<div class="image-modal" id="imgModal" aria-hidden="true">
-  <button class="close" id="imgClose" aria-label="閉じる">×</button>
-  <img id="imgLarge" alt="">
-</div>
+<footer>
+  <p>© 2025 まりおん All rights reserved.</p>
+</footer>
 
 <!-- スマホ用メニュー開閉 -->
 <script>
@@ -99,32 +88,5 @@
     });
   }
 </script>
-
-<!-- 画像拡大（このページは .gallery じゃなくカテゴリ一覧なので、不要なら削除OK） -->
-<script>
-  const modal = document.getElementById('imgModal');
-  const modalImg = document.getElementById('imgLarge');
-  const closeBtn = document.getElementById('imgClose');
-
-  document.querySelectorAll('.gallery img').forEach(img => {
-    img.addEventListener('click', () => {
-      modalImg.src = img.dataset.full || img.src;
-      modalImg.alt = img.alt || '';
-      modal.classList.add('open');
-      modal.setAttribute('aria-hidden', 'false');
-    });
-  });
-
-  function closeModal() {
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden', 'true');
-    modalImg.src = '';
-  }
-  closeBtn.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-</script>
-
-</div>
 </body>
 </html>
