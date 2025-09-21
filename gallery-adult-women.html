@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>まりおんのサイト | 大人女子ギャラリー</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1 class="pop-font">まりおんの創作物置き場</h1>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">☰</button>
+    <nav id="siteNav">
+      <a href="index.html">ホーム</a>
+      <a href="about.html">プロフィール</a>
+      <a href="gallery.html" class="active">ギャラリー</a>
+      <a href="music.html">音楽</a>
+      <a href="app.html">AIアプリ</a>
+      <a href="contact.html">お問い合わせ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h2>大人女子</h2>
+  <p>ここでは大人の女性をテーマにした画像を表示しています。</p>
+
+  <!-- もともとの .gallery と .card を流用（クリック拡大もそのまま効きます） -->
+  <section class="gallery">
+    <figure class="card">
+      <img src="images/AW/AW01.png" alt="大人女子 001" loading="lazy">
+      <figcaption>大人女子 001</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW02.png" alt="大人女子 002" loading="lazy">
+      <figcaption>大人女子 002</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW03.png" alt="大人女子 003" loading="lazy">
+      <figcaption>大人女子 003</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW04.png" alt="大人女子 004" loading="lazy">
+      <figcaption>大人女子 004</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW05.png" alt="大人女子 005" loading="lazy">
+      <figcaption>大人女子 005</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW06.png" alt="大人女子 006" loading="lazy">
+      <figcaption>大人女子 006</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW08.png" alt="大人女子 007" loading="lazy">
+      <figcaption>大人女子 007</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW10.png" alt="大人女子 008" loading="lazy">
+      <figcaption>大人女子 008</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW11.png" alt="大人女子 009" loading="lazy">
+      <figcaption>大人女子 009</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW12.png" alt="大人女子 010" loading="lazy">
+      <figcaption>大人女子 010</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW13.png" alt="大人女子 011" loading="lazy">
+      <figcaption>大人女子 011</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW14.png" alt="大人女子 012" loading="lazy">
+      <figcaption>大人女子 012</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="images/AW/AW15.png" alt="大人女子 013" loading="lazy">
+      <figcaption>大人女子 013</figcaption>
+    </figure>
+    <!-- ↑ここに追加していけばOK（data-full で原寸指定も可能） -->
+  </section>
+
+  <p><a class="btn" href="gallery.html">← カテゴリ一覧へ戻る</a></p>
+</main>
+
+<footer>
+  <p>© 2025 まりおん All rights reserved.</p>
+</footer>
+
+<!-- モーダル（クリック拡大用）— 既に gallery.html に入っているなら省略可 -->
+<div class="image-modal" id="imgModal" aria-hidden="true">
+  <button class="close" id="imgClose" aria-label="閉じる">×</button>
+  <img id="imgLarge" alt="">
+</div>
+
+<!-- 開閉 & 画像拡大スクリプト（あなたの共通JS＋拡大JSを再掲） -->
+<script>
+  // ☰ 開閉
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('menuBtn');
+    const nav = document.getElementById('siteNav');
+    if (btn && nav) {
+      btn.addEventListener('click', () => {
+        const open = document.body.classList.toggle('nav-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      nav.addEventListener('click', (e) => {
+        if (e.target.tagName === 'A') {
+          document.body.classList.remove('nav-open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    // クリック拡大（既存のをそのまま再利用）
+    const modal = document.getElementById('imgModal');
+    const modalImg = document.getElementById('imgLarge');
+    const closeBtn = document.getElementById('imgClose');
+
+    document.querySelectorAll('.gallery img').forEach(img => {
+      img.addEventListener('click', () => {
+        modalImg.src = img.dataset.full || img.src;
+        modalImg.alt = img.alt || '';
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+      });
+    });
+    closeBtn.addEventListener('click', () => closeModal());
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    function closeModal() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      modalImg.src = '';
+    }
+  });
+</script>
+</body>
+</html>
