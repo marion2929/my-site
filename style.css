@@ -41,3 +41,22 @@ footer { background: #333; color: #fff; text-align: center; padding: 12px; font-
   padding: 8px;
   color: #374151;
 }
+/* クリック拡大（ライトボックス） */
+.gallery img { cursor: zoom-in; }
+.image-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.8);
+  display: none; align-items: center; justify-content: center;
+  padding: 24px; z-index: 1000;
+}
+.image-modal.open { display: flex; }
+.image-modal img {
+  max-width: 90vw; max-height: 85vh;
+  border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+.image-modal .close {
+  position: absolute; top: 12px; right: 16px;
+  background: rgba(255,255,255,.9);
+  border: none; border-radius: 999px;
+  width: 36px; height: 36px; font-size: 20px; cursor: pointer;
+}
