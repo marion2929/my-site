@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>まりおんのサイト | 音楽</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 音楽ページ用の軽い装飾（既存のstyle.cssにほぼ影響しない） */
+    .player-wrap { max-width: 900px; margin: 24px auto; background:#fff; padding:16px; border-radius:8px; border:1px solid #e5e7eb; }
+    .tracks { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; }
+    .track { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 8px; border:1px solid #e5e7eb; background:#fff; }
+    .track.active { background:#f0faf3; border-color:#bde5c8; }
+    .track .title { font-weight: 600; }
+    .track button { padding:6px 10px; border:none; border-radius:6px; background:#4CAF50; color:#fff; cursor:pointer; }
+    .muted { color:#666; font-size: 14px; }
+    .now { margin: 8px 0 0; font-size: 14px; color:#333; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1 class="pop-font">まりおんの創作物置き場</h1>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">☰</button>
+    <nav id="siteNav">
+      <a href="index.html">ホーム</a>
+      <a href="about.html">プロフィール</a>
+      <a href="gallery.html">ギャラリー</a>
+      <a href="music.html" class="active">音楽</a>
+      <a href="app.html">AIアプリ</a>
+      <a href="contact.html">お問い合わせ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h2>音楽</h2>
+  <div class="player-wrap">
+    <!-- ネイティブのオーディオプレイヤー。ダウンロード抑止は完全ではないが controlsList で最低限の配慮 -->
+    <audio id="player" controls preload="metadata" controlsList="noplaybackrate">
+      <source src="music/spring-melody.mp3" type="audio/mpeg">
+      お使いのブラウザは音声要素に対応していません。
+    </audio>
+    <p class="now" id="nowPlaying">Now Playing: spring-melody</p>
+    <p class="muted">※ 音量は端末のボリュームで調整してください。自動再生はブラウザ仕様で無効です。</p>
+
+    <!-- プレイリスト。data-src に実ファイルを指定 -->
+    <ul class="tracks" id="trackList">
+      <li class="track active" data-src="music/endroll.mp3">
+        <span class="title">Spring Melody</span>
+        <button class="play">再生</button>
+      </li>
+      <li class="track" data-src="music/owarinosijima.mp3">
+        <span class="title">Night Walk</span>
+        <button class="play">再生</button>
+      </li>
+      <li class="track" data-src="music/yumemakura.mp3">
+        <span class="title">Sea Breeze</span>
+        <button class="play">再生</button>
+      </li>
+      <li class="track" data-src="music/yuudachinoatode.mp3">
+        <span class="title">Sea Breeze</span>
+        <button class="play">再生</button>
+      </li>
+      <!-- ここに曲を追加していけばOK
+      <li class="track" data-src="music/your-song.mp3"><span class="title">Your Song</span><button class="play">再生</button></li>
+      -->
+    </ul>
+  </div>
+</main>
+
+<footer>
+  <p>© 2025 まりおん All rights reserved.</p>
+</footer>
+
+<!-- スマホ用メニュー開閉（共通）＆プレイリスト制御 -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // ☰ 開閉
+    const btn = document.getElementById('menuBtn');
+    const nav = document.getElementById('siteNav');
+    if (btn && nav) {
+      btn.addEventListener('click', () => {
+        const open = document.body.classList.toggle('nav-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      nav.addEventListener('click', (e) => {
+        if (e.target.tagName === 'A') {
+          document.body.classList.remove('nav-open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    // オーディオ & プレイリスト
+    const player = document.getElementById('player');
+    const list = document.getElementById('trackList');
+    const now = document.getElementById('nowPlaying');
+
+    function setActive(li) {
+      document.querySelectorAll('.track').forEach(t => t.classList.remove('active'));
+      li.classList.add('active');
+      const title = li.querySelector('.title')?.textContent || li.dataset.src;
+      now.textContent = 'Now Playing: ' + title;
+    }
+
+    // 再生ボタンで切替
+    list.addEventListener('click', (e) => {
+      const btn = e.target.closest('.play');
+      const li = e.target.closest('.track');
+      if (!btn || !li) return;
+      const src = li.dataset.src;
+      if (!src) return;
+      if (player.src.endsWith(src)) {
+        // 同じ曲ならトグル再生/一時停止
+        if (player.paused) player.play(); else player.pause();
+      } else {
+        player.src = src;
+        setActive(li);
+        player.play();
+      }
+    });
+
+    // 曲が終わったら次の曲へ
+    player.addEventListener('ended', () => {
+      const items = Array.from(document.querySelectorAll('.track'));
+      const idx = items.findIndex(li => li.classList.contains('active'));
+      const next = items[(idx + 1) % items.length];
+      if (next) {
+        player.src = next.dataset.src;
+        setActive(next);
+        player.play();
+      }
+    });
+  });
+</script>
+</body>
+</html>
