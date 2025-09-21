@@ -139,3 +139,31 @@ nav .active { text-decoration: underline; }
 @media (min-width: 769px) and (max-width: 1024px) {
   .gallery { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
+/* ホームのスライドショー */
+.hero-rotator {
+  position: relative;
+  max-width: 1100px;  /* サイト幅に合わせる */
+  margin: 16px auto;
+  aspect-ratio: 16 / 9;      /* 縦横比をキープ（任意で 4/3 や 21/9 に変更可能） */
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  background: #ddd;          /* 読み込み中の背景 */
+}
+
+.hero-rotator img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity .6s ease;
+}
+
+.hero-rotator img.active {
+  opacity: 1;
+}
+
+/* スマホでの余白調整（任意） */
+@media (max-width: 768px) {
+  .hero-rotator { margin: 12px auto; }
+}
