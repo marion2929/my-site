@@ -60,5 +60,37 @@
   <footer>
     <p>© 2025 まりおん All rights reserved.</p>
   </footer>
+<!-- 画像モーダル（1個あればOK） -->
+<div class="image-modal" id="imgModal" aria-hidden="true">
+  <button class="close" id="imgClose" aria-label="閉じる">×</button>
+  <img id="imgLarge" alt="">
+</div>
 </body>
 </html>
+<script>
+  const modal = document.getElementById('imgModal');
+  const modalImg = document.getElementById('imgLarge');
+  const closeBtn = document.getElementById('imgClose');
+
+  // ギャラリー内の画像を全部ターゲットに
+  document.querySelectorAll('.gallery img').forEach(img => {
+    img.addEventListener('click', () => {
+      // data-full があれば大きい方、なければそのまま
+      modalImg.src = img.dataset.full || img.src;
+      modalImg.alt = img.alt || '';
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    });
+  });
+
+  // 閉じる：×ボタン / 背景クリック / ESCキー
+  closeBtn.addEventListener('click', () => closeModal());
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  function closeModal() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    modalImg.src = '';
+  }
+</script>
