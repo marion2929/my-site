@@ -33,40 +33,34 @@
 </header>
 
 
-  <main>
-    <h2>画像ギャラリー</h2>
-    <p>私の作った画像を並べています。</p>
+<main>
+  <h2>画像ギャラリー</h2>
+  <p>カテゴリを選ぶと、そのジャンルの画像一覧ページへ移動します。</p>
 
-    <section class="gallery">
-      <figure class="card">
-        <img src="images/AW01.png" alt="作品1" loading="lazy">
-        <figcaption>働く女子１</figcaption>
-      </figure>
+  <section class="category-grid">
+    <!-- 大人女子（サンプル1枚＋リンク） -->
+    <article class="category-card">
+      <img src="images/AW/AW01.png" alt="大人女子 サンプル">
+      <div class="body">
+        <h3>大人女子</h3>
+        <p>大人の女性をテーマにした作品をまとめています。</p>
+        <a class="btn" href="gallery-adult-women.html">大人女子のページへ</a>
+      </div>
+    </article>
 
-      <figure class="card">
-        <img src="images/AW02.png" alt="作品1" loading="lazy">
-        <figcaption>働く女子２</figcaption>
-      </figure>
+    <!-- 例：和服女子 -->
+    <article class="category-card">
+      <img src="images/AJW/C" alt="和服女子 サンプル">
+      <div class="body">
+        <h3>和服女子</h3>
+        <p>和服や浴衣女子の作品をまとめています。</p>
+        <a class="btn" href="gallery-landscapes.html">和服女子のページへ</a>
+      </div>
+    </article>
 
-      <figure class="card">
-        <img src="images/AW03.png" alt="作品1" loading="lazy">
-        <figcaption>働く女子３</figcaption>
-      </figure>
-
-      <figure class="card">
-        <img src="images/AW04.png" alt="作品1" loading="lazy">
-        <figcaption>働く女子４</figcaption>
-      </figure>
-
-      <figure class="card">
-        <img src="images/AW05.png" alt="作品1" loading="lazy">
-        <figcaption>働く女子５</figcaption>
-      </figure>
-
-
-    </section>
-  </main>
-
+    <!-- ↑増やすときは <article> をコピペしてタイトル/説明/リンク/サンプル画像を差し替え -->
+  </section>
+</main>
   <footer>
     <p>© 2025 まりおん All rights reserved.</p>
   </footer>
