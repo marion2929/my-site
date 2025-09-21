@@ -4,18 +4,39 @@
   <meta charset="utf-8">
   <title>まりおんのサイト | お問い合わせ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="style.css">
-</head>
 
+  <!-- フォント（必要なら）& 共通CSS -->
+  <!--
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+  -->
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* フォームの見た目だけ軽く整える（style.cssと衝突しない範囲） */
+    .form-wrap { max-width: 640px; margin: 24px auto; background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; }
+    .form-row { margin: 12px 0; }
+    label { display:block; font-weight: bold; margin-bottom: 6px; }
+    input[type="text"], input[type="email"], textarea {
+      width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;
+      background: #fff;
+    }
+    textarea { min-height: 140px; }
+    .btn { display:inline-block; padding:10px 16px; background:#4CAF50; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
+    .note { font-size: 14px; color: #555; }
+    .hide { display:none; }
+    .success, .error { margin-top: 12px; padding: 10px; border-radius: 6px; }
+    .success { background: #e7f7ed; color: #11633a; border: 1px solid #bce7cb; }
+    .error { background: #fde8e8; color: #7a1717; border: 1px solid #f5c2c2; }
+  </style>
+</head>
 <body>
+
 <header>
   <div class="header-inner">
     <h1 class="pop-font">まりおんの創作物置き場</h1>
-
-    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
-      ☰
-    </button>
-
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">☰</button>
     <nav id="siteNav">
       <a href="index.html">ホーム</a>
       <a href="about.html">プロフィール</a>
@@ -26,44 +47,96 @@
   </div>
 </header>
 
+<main>
+  <h2>お問い合わせ</h2>
+  <div class="form-wrap">
+    <form id="contactForm" action="https://formspree.io/f/manpwnbb" method="POST">
+      <!-- 送信者名 -->
+      <div class="form-row">
+        <label for="name">お名前</label>
+        <input id="name" name="name" type="text" required>
+      </div>
 
+      <!-- 返信先メール -->
+      <div class="form-row">
+        <label for="email">メールアドレス</label>
+        <input id="email" name="_replyto" type="email" inputmode="email" autocomplete="email" required>
+      </div>
 
-  <main>
-    <h2>お問い合わせ</h2>
-    <form onsubmit="alert('デモなので送信はしません'); return false;">
-      <label for="name">お名前</label>
-      <input id="name" name="name" type="text" required>
+      <!-- 本文 -->
+      <div class="form-row">
+        <label for="message">メッセージ</label>
+        <textarea id="message" name="message" required></textarea>
+      </div>
 
-      <label for="msg">メッセージ</label>
-      <textarea id="msg" name="msg" rows="5" required></textarea>
+      <!-- スパム対策（人間は見えない） -->
+      <div class="hide" aria-hidden="true">
+        <label>Leave this empty</label>
+        <input type="text" name="_gotcha" tabindex="-1">
+      </div>
 
-      <button type="submit">送信（デモ）</button>
+      <!-- 送信ボタン -->
+      <button class="btn" type="submit">送信</button>
+
+      <!-- 成功/失敗メッセージ -->
+      <p id="formSuccess" class="success hide">送信しました。返信まで少々お待ちください！</p>
+      <p id="formError" class="error hide">送信に失敗しました。お手数ですが、しばらくしてからもう一度お試しください。</p>
+
+      <!-- 連絡方法の注記（お好みで） -->
+      <p class="note">※ 入力いただいた情報はお問い合わせ対応のみに使用します。</p>
     </form>
-  </main>
+  </div>
+</main>
 
-  <footer>
-    <p>© 2025 まりおん All rights reserved.</p>
-  </footer>
+<footer>
+  <p>© 2025 まりおん All rights reserved.</p>
+</footer>
 
+<!-- スマホ用メニュー開閉（あなたの全ページ共通のJS） -->
 <script>
-  const btn = document.getElementById('menuBtn');
-  const nav = document.getElementById('siteNav');
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('menuBtn');
+    const nav = document.getElementById('siteNav');
+    if (btn && nav) {
+      btn.addEventListener('click', () => {
+        const open = document.body.classList.toggle('nav-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      nav.addEventListener('click', (e) => {
+        if (e.target.tagName === 'A') {
+          document.body.classList.remove('nav-open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
 
-  if (btn && nav) {
-    btn.addEventListener('click', () => {
-      const open = document.body.classList.toggle('nav-open');
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
+    // ===== Formspree に Ajax 送信（ページ遷移なしで完了表示） =====
+    const form = document.getElementById('contactForm');
+    const ok = document.getElementById('formSuccess');
+    const ng = document.getElementById('formError');
 
-    // ナビをタップしたら自動で閉じる（スマホでの操作感UP）
-    nav.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A') {
-        document.body.classList.remove('nav-open');
-        btn.setAttribute('aria-expanded', 'false');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      ok.classList.add('hide'); ng.classList.add('hide');
+
+      try {
+        const data = new FormData(form);
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: data,
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          form.reset();
+          ok.classList.remove('hide');
+        } else {
+          ng.classList.remove('hide');
+        }
+      } catch (err) {
+        ng.classList.remove('hide');
       }
     });
-  }
+  });
 </script>
-
 </body>
 </html>
