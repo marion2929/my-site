@@ -167,3 +167,23 @@ nav .active { text-decoration: underline; }
 @media (max-width: 768px) {
   .hero-rotator { margin: 12px auto; }
 }
+/* カテゴリ入口ページ用 */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  padding: 10px 0;
+}
+.category-card {
+  background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+}
+.category-card img { width:100%; display:block; }
+.category-card .body { padding:12px; }
+.category-card h3 { margin:0 0 8px; font-size:1.05rem; }
+.category-card p { margin:0 0 10px; color:#555; font-size:.95rem; }
+.category-card .btn {
+  display:inline-block; padding:8px 12px; background:#4CAF50; color:#fff; border-radius:6px;
+  text-decoration:none; font-weight:700;
+}
+.category-card .btn:hover { filter: brightness(1.05); }
