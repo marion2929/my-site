@@ -46,6 +46,7 @@
 </footer>
 
 <!-- ← ← ← スクリプトはここ（本文のいちばん最後） -->
+<!-- スマホ用メニュー開閉（共通） -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('menuBtn');
@@ -66,9 +67,9 @@
   });
 </script>
 
+<!-- ヒーロースライドショー -->
 <script>
-  // 切替える画像のリスト（必要に応じて追加/編集）
-<script>
+  // 画像リスト（images/ を付け忘れない）
   const slides = [
     { src: 'images/FADO01.png', alt: '海の見える景色１' },
     { src: 'images/FADO02.png', alt: '海の見える景色２' },
@@ -83,33 +84,27 @@
     { src: 'images/FADO11.png', alt: '草原と街１' },
     { src: 'images/FADO12.png', alt: '草原と街２' },
   ];
-  // 以下はそのまま
-</script>
-
 
   const imgA = document.getElementById('heroA');
   const imgB = document.getElementById('heroB');
-  let current = 0;     // 現在のインデックス
-  let showingA = true; // どっちのimgを表示中か
+  let current = 0;           // 現在のインデックス
+  let showingA = true;       // どちらのimgを表示中か
   let timer;
 
-  // 次のインデックス
   function nextIndex(i) {
     return (i + 1) % slides.length;
   }
 
-  // 次の画像をプリロードしてからフェード切替
+  // 画像切替（先読み → フェード）
   function swap() {
     const next = nextIndex(current);
-    const target = showingA ? imgB : imgA; // 次に表示する方
+    const target = showingA ? imgB : imgA;
 
-    // 画像を先読み
     const pre = new Image();
     pre.onload = () => {
       target.src = slides[next].src;
       target.alt = slides[next].alt;
 
-      // フェード（片方にactiveクラス）
       if (showingA) {
         imgA.classList.remove('active');
         imgB.classList.add('active');
@@ -121,22 +116,28 @@
       showingA = !showingA;
       current = next;
     };
+    pre.onerror = () => {
+      console.warn('画像を読み込めませんでした:', slides[next].src);
+      current = next;         // 問題の画像はスキップ
+      setTimeout(swap, 0);    // すぐ次へ
+    };
     pre.src = slides[next].src;
   }
 
   function start() {
-    stop(); // 念のため
-    timer = setInterval(swap, 5000); // 5秒間隔（好みで調整OK）
+    stop();
+    if (slides.length >= 2) {
+      timer = setInterval(swap, 5000); // 5秒ごとに切替（お好みで調整）
+    }
   }
   function stop() { if (timer) clearInterval(timer); }
 
-  // タブが非表示のときは停止 → 再表示で再開（バッテリー節約）
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) stop(); else start();
   });
 
-  // 画像枚数が2枚未満ならスライドショーは実行しない
-  if (slides.length >= 2) start();
+  // 初期化：最初の2枚が <img id="heroA/B"> に入っている前提
+  start();
 </script>
 
 </body>
