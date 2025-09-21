@@ -1,79 +1,33 @@
-/* 共通基本 */
+/* =========================
+   style.css（完全版）
+   これをそのまま上書きでOK
+   ========================= */
+
+/* --- ベース & リセット --- */
 * { box-sizing: border-box; }
-body { margin: 0; font-family: Arial, sans-serif; background: #f6f7fb; }
-img { max-width: 100%; height: auto; }
-
-/* ヘッダー＆ナビ */
-header { background: #4CAF50; color: #fff; padding: 16px; text-align: center; }
-nav a { margin: 0 10px; color: #fff; text-decoration: none; font-weight: bold; }
-nav a:hover { text-decoration: underline; }
-nav .active { text-decoration: underline; }
-
-/* 本文 */
-main { max-width: 980px; margin: 24px auto; padding: 0 16px; }
-
-/* フッター */
-footer { background: #333; color: #fff; text-align: center; padding: 12px; font-size: 14px; }
-
-/* フォント（Mochiy Pop One）を当てたい所に付ける */
-.pop-font { font-family: 'Mochiy Pop One', sans-serif; }
-/* ---- ギャラリー ---- */
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-  padding: 10px 0;
-}
-.card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0,0,0,.05);
-}
-.card img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-.card figcaption {
-  font-size: 14px;
-  padding: 8px;
-  color: #374151;
-}
-/* クリック拡大（ライトボックス） */
-.gallery img { cursor: zoom-in; }
-.image-modal {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.8);
-  display: none; align-items: center; justify-content: center;
-  padding: 24px; z-index: 1000;
-}
-.image-modal.open { display: flex; }
-.image-modal img {
-  max-width: 90vw; max-height: 85vh;
-  border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
-}
-.image-modal .close {
-  position: absolute; top: 12px; right: 16px;
-  background: rgba(255,255,255,.9);
-  border: none; border-radius: 999px;
-  width: 36px; height: 36px; font-size: 20px; cursor: pointer;
-}
-/* === ベース（共通） ===================================== */
-* { box-sizing: border-box; }
-html, body { margin: 0; }
+html, body { margin: 0; padding: 0; }
 body {
-  /* 読みやすい流体タイポグラフィ：14px〜18pxの範囲で自動調整 */
   font-family: Arial, sans-serif;
+  /* 14px〜18pxの間で自動調整 */
   font-size: clamp(14px, 2.4vw, 18px);
   background: #f6f7fb;
   color: #111;
+  line-height: 1.6;
 }
 img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; }
 
-/* ヘッダー */
-header { background: #4CAF50; color: #fff; }
+/* --- レイアウト共通 --- */
+main { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+footer { background:#333; color:#fff; text-align:center; padding:12px; font-size:14px; }
+
+/* --- フォントクラス（Google Fonts 読み込みはHTMLの<head>で） --- */
+.pop-font { font-family: 'Mochiy Pop One', sans-serif; }
+
+/* =========================
+   ヘッダー & ナビ
+   ========================= */
+header { background: #4CAF50; color:#fff; }
 .header-inner {
   max-width: 1100px;
   margin: 0 auto;
@@ -87,28 +41,34 @@ header h1 {
   font-size: clamp(20px, 4.5vw, 32px);
 }
 
-/* ナビ（デスクトップ初期） */
+/* ナビ（PC初期表示） */
 nav { margin-left: auto; display: flex; gap: 12px; }
 nav a {
-  color: #fff; text-decoration: none; font-weight: bold;
-  padding: 6px 8px; border-radius: 6px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background .15s ease;
 }
 nav a:hover { background: rgba(255,255,255,.15); }
 nav .active { text-decoration: underline; }
 
-/* メニューボタン（デスクトップでは非表示） */
+/* メニューボタン（PCでは非表示） */
 .menu-btn {
   display: none;
   background: rgba(255,255,255,.15);
-  color: #fff; border: none; border-radius: 6px;
-  font-size: 20px; width: 40px; height: 36px; cursor: pointer;
+  color:#fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 20px;
+  width: 40px; height: 36px;
+  cursor: pointer;
 }
 
-/* 本文とフッター */
-main { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
-footer { background:#333; color:#fff; text-align:center; padding:12px; font-size: 14px; }
-
-/* ギャラリー（既存を置換OK） */
+/* =========================
+   ギャラリー
+   ========================= */
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* 基本サイズ */
@@ -116,43 +76,66 @@ footer { background:#333; color:#fff; text-align:center; padding:12px; font-size
   padding: 10px 0;
 }
 .gallery.large { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
-.card img { width: 100%; }
 
-/* クリック拡大モーダル（前に入れたものを流用） */
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+}
+.card img { width: 100%; height: auto; }
+.card figcaption { font-size: 14px; padding: 8px; color: #374151; }
+
+/* =========================
+   画像クリック拡大（モーダル）
+   ========================= */
 .gallery img { cursor: zoom-in; }
-.image-modal { position: fixed; inset: 0; background: rgba(0,0,0,.8); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 1000; }
+.image-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.8);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 24px; z-index: 1000;
+}
 .image-modal.open { display: flex; }
-.image-modal img { max-width: 90vw; max-height: 85vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
-.image-modal .close { position: absolute; top: 12px; right: 16px; background: rgba(255,255,255,.9); border: none; border-radius: 999px; width: 36px; height: 36px; font-size: 20px; cursor: pointer; }
+.image-modal img {
+  max-width: 90vw; max-height: 85vh;
+  border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+.image-modal .close {
+  position: absolute; top: 12px; right: 16px;
+  background: rgba(255,255,255,.9);
+  border: none; border-radius: 999px;
+  width: 36px; height: 36px; font-size: 20px; cursor: pointer;
+}
 
-/* === スマホ向け（幅 768px 以下） ======================== */
+/* =========================
+   レスポンシブ（スマホ）
+   ========================= */
 @media (max-width: 768px) {
-  /* ヘッダーの並び：タイトル左、メニューボタン右、ナビは下に折りたたみ */
   .header-inner { flex-wrap: wrap; }
   .menu-btn { display: inline-block; margin-left: auto; }
+
+  /* 初期状態でナビは非表示。body に .nav-open が付いたら表示 */
   nav {
     width: 100%;
-    order: 3;                 /* タイトル→ボタン→ナビの順 */
-    display: none;            /* 既定は非表示（ボタンで開く） */
+    order: 3;                 /* タイトル→ボタン→ナビの順に並ぶ */
+    display: none;
     flex-direction: column;
     gap: 8px;
-    padding: 8px 0 0;
+    padding-top: 8px;
   }
-  nav a {
-    background: rgba(255,255,255,.1);
-    padding: 10px 12px;
-  }
-
-  /* “開いた状態”のクラスが body に付いたら表示 */
   body.nav-open nav { display: flex; }
 
-  /* 本文横幅とギャラリーの最小幅を少し小さくして収まりやすく */
+  /* 本文幅とギャラリーの列幅を調整 */
   main { max-width: 680px; }
   .gallery { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 }
 
-/* === タブレット〜中画面（幅 769〜1024px 目安） ========= */
+/* =========================
+   タブレット調整（任意）
+   ========================= */
 @media (min-width: 769px) and (max-width: 1024px) {
   .gallery { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
