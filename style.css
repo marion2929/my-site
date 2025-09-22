@@ -1,6 +1,6 @@
 /* =========================
-   style.css（完全版）
-   これをそのまま上書きでOK
+   style.css（スッキリ完全版）
+   そのまま上書きでOK
    ========================= */
 
 /* --- ベース & リセット --- */
@@ -8,84 +8,137 @@
 html, body { margin: 0; padding: 0; }
 body {
   font-family: Arial, sans-serif;
-  /* 14px〜18pxの間で自動調整 */
   font-size: clamp(14px, 2.4vw, 18px);
   background: #f6f7fb;
   color: #111;
   line-height: 1.6;
 }
 img { max-width: 100%; height: auto; display: block; }
-a { color: inherit; }
+a { color: inherit; text-decoration: none; }
 
-/* --- レイアウト共通 --- */
 main { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
 footer { background:#333; color:#fff; text-align:center; padding:12px; font-size:14px; }
 
-/* --- フォントクラス（Google Fonts 読み込みはHTMLの<head>で） --- */
+/* Google Fonts を使う見出し用（<head>で Mochiy Pop One を読み込み） */
 .pop-font { font-family: 'Mochiy Pop One', sans-serif; }
 
 /* =========================
-   ヘッダー & ナビ
+   ヘッダー（上：キャラ＋タイトル、下：ナビ）
    ========================= */
-header { background: #4CAF50; color:#fff; }
-.header-inner {
+.site-header {
+  position: relative;  /* 背景の上にキャラを重ねる土台 */
+  background: url('images/header/starry-sky1.png') center/cover no-repeat, #2b2d42;
+  color: #fff;
+  padding: 16px 0;
+}
+.site-header .header-inner {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 12px 16px;
+  padding: 0 16px;
+  display: block;      /* 上下2段にしたいので block */
+}
+
+/* 上段：キャラ（左）＋ タイトル ＋ ☰ボタン */
+.header-top {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-header h1 {
+.header-char {
+  /* 透過PNGならそのまま背景上に重なる（追加設定不要） */
+  width: clamp(60px, 10vw, 100px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+}
+.site-title {
   margin: 0;
-  font-size: clamp(20px, 4.5vw, 32px);
+  font-size: clamp(22px, 5vw, 40px);
+  line-height: 1.1;
+  color: #ff66b3;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 12px rgba(255,102,179,.35);
+  flex: 1;  /* タイトルを横に広げてバランス取り */
 }
-
-/* ナビ（PC初期表示） */
-nav { margin-left: auto; display: flex; gap: 12px; }
-nav a {
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
-  padding: 6px 8px;
-  border-radius: 6px;
-  transition: background .15s ease;
-}
-nav a:hover { background: rgba(255,255,255,.15); }
-nav .active { text-decoration: underline; }
-
-/* メニューボタン（PCでは非表示） */
 .menu-btn {
-  display: none;
+  display: none;       /* PCでは隠す。スマホで表示 */
   background: rgba(255,255,255,.15);
-  color:#fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 20px;
-  width: 40px; height: 36px;
-  cursor: pointer;
+  color:#fff; border: none; border-radius: 6px;
+  font-size: 20px; width: 40px; height: 36px; cursor: pointer;
 }
+
+/* 下段：ナビ（リンク群） */
+#siteNav {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 1.05em;
+}
+#siteNav a {
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background .2s ease;
+}
+#siteNav a:hover,
+#siteNav a.active { background: rgba(255,255,255,.2); }
 
 /* =========================
-   ギャラリー
+   スライドショー（ホーム）
+   ========================= */
+.hero-rotator {
+  position: relative;
+  max-width: 1100px;
+  margin: 16px auto;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  background: #ddd;
+}
+.hero-rotator img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0; transition: opacity .6s ease;
+}
+.hero-rotator img.active { opacity: 1; }
+
+/* =========================
+   ギャラリー（カード）
    ========================= */
 .gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* 基本サイズ */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
   padding: 10px 0;
 }
 .gallery.large { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-
 .card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;
+  box-shadow:0 1px 2px rgba(0,0,0,.05);
 }
-.card img { width: 100%; height: auto; }
-.card figcaption { font-size: 14px; padding: 8px; color: #374151; }
+.card img { width:100%; }
+.card figcaption { font-size:14px; padding:8px; color:#374151; }
+
+/* 入口ページ（カテゴリカード） */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px; padding: 10px 0;
+}
+.category-card {
+  background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+}
+.category-card img { width:100%; display:block; }
+.category-card .body { padding:12px; }
+.category-card h3 { margin:0 0 8px; font-size:1.05rem; }
+.category-card p { margin:0 0 10px; color:#555; font-size:.95rem; }
+.category-card .btn {
+  display:inline-block; padding:8px 12px; background:#4CAF50; color:#fff; border-radius:6px; text-decoration:none; font-weight:700;
+}
+.category-card .btn:hover { filter: brightness(1.05); }
 
 /* =========================
    画像クリック拡大（モーダル）
@@ -111,260 +164,18 @@ nav .active { text-decoration: underline; }
 }
 
 /* =========================
-   レスポンシブ（スマホ）
+   レスポンシブ
    ========================= */
 @media (max-width: 768px) {
-  .header-inner { flex-wrap: wrap; }
   .menu-btn { display: inline-block; margin-left: auto; }
+  #siteNav { display: none; flex-direction: column; }
+  body.nav-open #siteNav { display: flex; }
 
-  /* 初期状態でナビは非表示。body に .nav-open が付いたら表示 */
-  nav {
-    width: 100%;
-    order: 3;                 /* タイトル→ボタン→ナビの順に並ぶ */
-    display: none;
-    flex-direction: column;
-    gap: 8px;
-    padding-top: 8px;
-  }
-  body.nav-open nav { display: flex; }
-
-  /* 本文幅とギャラリーの列幅を調整 */
   main { max-width: 680px; }
   .gallery { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .hero-rotator { margin: 12px auto; }
 }
 
-/* =========================
-   タブレット調整（任意）
-   ========================= */
 @media (min-width: 769px) and (max-width: 1024px) {
   .gallery { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
-/* ホームのスライドショー */
-.hero-rotator {
-  position: relative;
-  max-width: 1100px;  /* サイト幅に合わせる */
-  margin: 16px auto;
-  aspect-ratio: 16 / 9;      /* 縦横比をキープ（任意で 4/3 や 21/9 に変更可能） */
-  overflow: hidden;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.12);
-  background: #ddd;          /* 読み込み中の背景 */
-}
-
-.hero-rotator img {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity .6s ease;
-}
-
-.hero-rotator img.active {
-  opacity: 1;
-}
-
-/* スマホでの余白調整（任意） */
-@media (max-width: 768px) {
-  .hero-rotator { margin: 12px auto; }
-}
-/* カテゴリ入口ページ用 */
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  padding: 10px 0;
-}
-.category-card {
-  background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;
-  box-shadow:0 2px 6px rgba(0,0,0,.06);
-}
-.category-card img { width:100%; display:block; }
-.category-card .body { padding:12px; }
-.category-card h3 { margin:0 0 8px; font-size:1.05rem; }
-.category-card p { margin:0 0 10px; color:#555; font-size:.95rem; }
-.category-card .btn {
-  display:inline-block; padding:8px 12px; background:#4CAF50; color:#fff; border-radius:6px;
-  text-decoration:none; font-weight:700;
-}
-.category-card .btn:hover { filter: brightness(1.05); }
-/* ==== 星空ヘッダー（背景画像） ==== */
-.site-header {
-  /* ここで背景画像を指定 */
-  background: url('images/header/starry-sky1.png') center/cover no-repeat, #2b2d42;
-  color: #fff;
-  position: relative;
-  /* 余白を少し増やしてリッチに見せる */
-  padding: 16px 0;
-}
-
-/* 既存 .header-inner はそのまま流用 */
-.site-header .header-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* キャラクター画像（左） */
-.header-char {
-  width: clamp(72px, 12vw, 120px);
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 6px 14px rgba(0,0,0,.35));
-}
-
-/* タイトルをもっとポップに（縁取り風シャドウ） */
-.site-title {
-  margin: 0;
-  font-size: clamp(22px, 4.8vw, 40px);
-  line-height: 1.1;
-  color: #ff66b3; /* ポップなピンク系 */
-  text-shadow:
-    0 2px 0 rgba(0,0,0,.35),
-    0 0 12px rgba(255, 102, 179, .35);
-}
-
-/* 小画面レイアウト */
-@media (max-width: 768px) {
-  .site-header .header-inner { flex-wrap: wrap; }
-  .header-char { order: 1; }
-  .site-title { order: 2; flex: 1 1 60%; }
-  .menu-btn { order: 3; margin-left: auto; }
-  #siteNav { order: 4; width: 100%; }
-}
-
-/* スライドショー（フェード用。未導入なら念のため） */
-.hero-rotator { position: relative; max-width: 1100px; margin: 16px auto; aspect-ratio: 16/9; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.12); }
-.hero-rotator img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .6s ease; }
-.hero-rotator img.active { opacity: 1; }
-/* 全体背景はそのまま */
-.site-header {
-  background: url('images/header/starry-sky1.png') center/cover no-repeat, #2b2d42;
-  color: #fff;
-  padding: 16px 0;
-}
-
-/* 背景など（そのままでOK） */
-.site-header {
-  background: url('images/header/starry-sky1.png') center/cover no-repeat, #2b2d42;
-  color: #fff;
-  padding: 16px 0;
-}
-
-/* ← ここが重要：縦レイアウトにするため display:block に修正 */
-.header-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 16px;
-  display: block;              /* ← 以前の display:flex を打ち消す */
-}
-
-/* 上段：横並び */
-.header-top {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* キャラ画像とタイトル */
-.header-char {
-  width: clamp(60px, 10vw, 100px);
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
-}
-.site-title {
-  margin: 0;
-  font-size: clamp(22px, 5vw, 40px);
-  color: #ff66b3;
-  text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 12px rgba(255,102,179,.35);
-  flex: 1;                     /* タイトルが横に広がる */
-}
-
-/* 下段：ナビを独立の段に */
-#siteNav {
-  margin-top: 12px;            /* ← 上段と間隔を空ける */
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  font-size: 1.1em;
-}
-#siteNav a {
-  color: #fff;
-  text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  transition: background .3s;
-}
-#siteNav a:hover,
-#siteNav a.active {
-  background: rgba(255,255,255,.2);
-}
-
-/* スマホ：☰で開閉（今まで通り） */
-@media (max-width: 768px) {
-  .header-top { flex-wrap: wrap; }
-  .menu-btn { margin-left: auto; }
-  #siteNav { display: none; flex-direction: column; }
-  body.nav-open #siteNav { display: flex; }
-}
-
-/* === ヘッダー2段レイアウトを強制（末尾に置く） === */
-.site-header .header-inner {
-  display: block !important;           /* 古い display:flex を無効化 */
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 16px;
-}
-
-.site-header .header-top {
-  display: flex !important;            /* 上段：キャラ＋タイトル＋☰ を横並び */
-  align-items: center;
-  gap: 12px;
-}
-
-.site-header .header-char {
-  width: clamp(60px, 10vw, 100px);
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
-}
-
-.site-header .site-title {
-  margin: 0;
-  font-size: clamp(22px, 5vw, 40px);
-  color: #ff66b3;
-  text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 12px rgba(255,102,179,.35);
-  flex: 1;
-}
-
-.site-header #siteNav {
-  margin-top: 12px;                    /* 下段に独立させる要！ */
-  display: flex !important;
-  flex-wrap: wrap;
-  gap: 16px;
-  font-size: 1.1em;
-}
-
-.site-header #siteNav a {
-  color: #fff;
-  text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  transition: background .3s;
-}
-.site-header #siteNav a:hover,
-.site-header #siteNav a.active {
-  background: rgba(255,255,255,.2);
-}
-
-/* スマホ：☰ で開閉 */
-@media (max-width: 768px) {
-  .site-header .header-top { flex-wrap: wrap; }
-  .site-header .menu-btn { margin-left: auto; }
-  .site-header #siteNav { display: none !important; flex-direction: column; }
-  body.nav-open .site-header #siteNav { display: flex !important; }
-}
-
