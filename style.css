@@ -179,28 +179,36 @@ footer { background:#333; color:#fff; text-align:center; padding:12px; font-size
 @media (min-width: 769px) and (max-width: 1024px) {
   .gallery { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
+/* === キャラはタイトルの左：シンプル版（絶対配置は使わない） === */
 
-/* ヘッダー背景の上に重ねるための土台 */
-.site-header { position: relative; }
-
-/* タイトル左にキャラ分のスペースを確保（数値は好みで微調整） */
-.header-top {
-  position: relative;
-  padding-left: clamp(90px, 12vw, 150px);
+/* 実験で入れた絶対配置系を打ち消し */
+.header-top { position: static !important; padding-left: 0 !important; }
+.header-char {
+  position: static !important;
+  top: auto !important; left: auto !important;
+  z-index: auto !important;
+  mix-blend-mode: normal !important;
+  background: transparent !important;
 }
 
-/* キャラを左上に絶対配置して前面に */
+/* 上段：キャラ＋タイトル＋☰ を横並び（中央揃え） */
+.header-top {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+}
+
+/* キャラの大きさ（透過PNGでOK） */
 .header-char {
-  position: absolute;
-  top: 6px;          /* 上下位置の微調整 */
-  left: 12px;        /* 左右位置の微調整 */
-  width: clamp(70px, 12vw, 130px);
+  width: clamp(60px, 10vw, 100px) !important;
   height: auto;
-  z-index: 3;        /* 前面に出す（数字大きめでOK） */
-  pointer-events: none;
+  object-fit: contain;
   filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
 }
 
-/* 念のため：前景レイヤに背景色が残ってたら透明化 */
+/* タイトルは横に広げてバランス良く */
+.site-title { flex: 1; }
+
+/* 念のため：前景の背景色を透明に固定 */
 .site-header .header-inner,
 .site-header .header-top { background: transparent !important; }
