@@ -187,3 +187,55 @@ nav .active { text-decoration: underline; }
   text-decoration:none; font-weight:700;
 }
 .category-card .btn:hover { filter: brightness(1.05); }
+/* ==== 星空ヘッダー（背景画像） ==== */
+.site-header {
+  /* ここで背景画像を指定 */
+  background: url('images/header/starry-sky1.png') center/cover no-repeat, #2b2d42;
+  color: #fff;
+  position: relative;
+  /* 余白を少し増やしてリッチに見せる */
+  padding: 16px 0;
+}
+
+/* 既存 .header-inner はそのまま流用 */
+.site-header .header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* キャラクター画像（左） */
+.header-char {
+  width: clamp(72px, 12vw, 120px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,.35));
+}
+
+/* タイトルをもっとポップに（縁取り風シャドウ） */
+.site-title {
+  margin: 0;
+  font-size: clamp(22px, 4.8vw, 40px);
+  line-height: 1.1;
+  color: #ff66b3; /* ポップなピンク系 */
+  text-shadow:
+    0 2px 0 rgba(0,0,0,.35),
+    0 0 12px rgba(255, 102, 179, .35);
+}
+
+/* 小画面レイアウト */
+@media (max-width: 768px) {
+  .site-header .header-inner { flex-wrap: wrap; }
+  .header-char { order: 1; }
+  .site-title { order: 2; flex: 1 1 60%; }
+  .menu-btn { order: 3; margin-left: auto; }
+  #siteNav { order: 4; width: 100%; }
+}
+
+/* スライドショー（フェード用。未導入なら念のため） */
+.hero-rotator { position: relative; max-width: 1100px; margin: 16px auto; aspect-ratio: 16/9; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.12); }
+.hero-rotator img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .6s ease; }
+.hero-rotator img.active { opacity: 1; }
