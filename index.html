@@ -4,60 +4,45 @@
   <meta charset="utf-8">
   <title>まりおんのサイト | ホーム</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
-  <!-- （任意）Mochiy Pop One を使う場合はフォント読み込みもここに -->
-  <!--
+
+  <!-- フォント（ポップな見た目用。既に読み込んでいたら二重で入れないでOK） -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
-  -->
+
+  <link rel="stylesheet" href="style.css">
 </head>
+<script src="js/include.js"></script>
 <body>
 
-<header>
-  <div class="header-inner">
-    <h1 class="pop-font">まりおんの創作物置き場</h1>
-    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">☰</button>
-    <nav id="siteNav">
-      <a href="index.html" class="active">ホーム</a>
-      <a href="about.html">プロフィール</a>
-      <a href="gallery.html">ギャラリー</a>
-      <a href="music.html">音楽</a>
-      <a href="app.html">AIアプリ</a>
-      <a href="contact.html">お問い合わせ</a>
-    </nav>
-  </div>
-</header>
+<!-- ここに共通ヘッダーを差し込む -->
+<div data-include="partials/header.html"></div>
 
 <main>
   <h2>ようこそ！</h2>
   <p>ここは私の創作物を置くWebサイトです。</p>
 
-  <!-- スライドショー -->
+  <!-- スライドショー（最初は適当な2枚。JSがランダムな先頭2枚に差し替えます） -->
   <div class="hero-rotator" aria-label="景色ギャラリー">
-    <img id="heroA" class="active" src="images/FADO01.png" alt="海の見える景色１">
-    <img id="heroB" src="images/FADO02.png" alt="海の見える景色２">
+    <img id="heroA" class="active" src="images/FADO/FADO01.png" alt="景色A">
+    <img id="heroB" src="images/FADO/FADO02.png" alt="景色B">
   </div>
 </main>
-
 
 <footer>
   <p>© 2025 まりおん All rights reserved.</p>
 </footer>
 
-<!-- ← ← ← スクリプトはここ（本文のいちばん最後） -->
-<!-- スマホ用メニュー開閉（共通） -->
+<!-- スマホ用メニュー開閉 -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('menuBtn');
     const nav = document.getElementById('siteNav');
     if (!btn || !nav) return;
-
     btn.addEventListener('click', () => {
       const open = document.body.classList.toggle('nav-open');
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
-
     nav.addEventListener('click', (e) => {
       if (e.target.tagName === 'A') {
         document.body.classList.remove('nav-open');
@@ -67,29 +52,37 @@
   });
 </script>
 
-<!-- ヒーロースライドショー -->
+<!-- ヒーロースライドショー：ランダム順・31枚対応 -->
 <script>
-  // 画像リスト（images/ を付け忘れない）
-  const slides = [
-    { src: 'images/FADO01.png', alt: '海の見える景色１' },
-    { src: 'images/FADO02.png', alt: '海の見える景色２' },
-    { src: 'images/FADO03.png', alt: '海の見える景色３' },
-    { src: 'images/FADO04.png', alt: '草原と岩山１' },
-    { src: 'images/FADO05.png', alt: '草原と岩山２' },
-    { src: 'images/FADO06.png', alt: '草原と岩山３' },
-    { src: 'images/FADO07.png', alt: '草原と岩山４' },
-    { src: 'images/FADO08.png', alt: '草原と岩山５' },
-    { src: 'images/FADO09.png', alt: '草原１' },
-    { src: 'images/FADO10.png', alt: '草原２' },
-    { src: 'images/FADO11.png', alt: '草原と街１' },
-    { src: 'images/FADO12.png', alt: '草原と街２' },
-  ];
+  // 1) 画像配列を 01〜31 で自動生成
+  const slides = Array.from({ length: 31 }, (_, i) => {
+    const n = String(i + 1).padStart(2, '0'); // 01, 02, …, 31
+    return { src: `images/FADO/FADO${n}.png`, alt: `景色${i + 1}` };
+  });
+
+  // 2) フィッシャー–イェーツでランダムに並べ替え
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  shuffle(slides);
 
   const imgA = document.getElementById('heroA');
   const imgB = document.getElementById('heroB');
-  let current = 0;           // 現在のインデックス
-  let showingA = true;       // どちらのimgを表示中か
+  let current = 0;     // 現在のインデックス（slides[current] が次に向かう先）
+  let showingA = true; // どちらを前面に出しているか
   let timer;
+
+  // 初期表示をランダム先頭2枚に合わせる
+  (function initFirstTwo() {
+    if (!imgA || !imgB || slides.length < 2) return;
+    imgA.src = slides[0].src; imgA.alt = slides[0].alt;
+    imgB.src = slides[1].src; imgB.alt = slides[1].alt;
+    current = 1; // 次は index 2 へ
+  })();
 
   function nextIndex(i) {
     return (i + 1) % slides.length;
@@ -112,7 +105,6 @@
         imgB.classList.remove('active');
         imgA.classList.add('active');
       }
-
       showingA = !showingA;
       current = next;
     };
@@ -127,7 +119,7 @@
   function start() {
     stop();
     if (slides.length >= 2) {
-      timer = setInterval(swap, 5000); // 5秒ごとに切替（お好みで調整）
+      timer = setInterval(swap, 5000); // 5秒ごと（お好みで変更OK）
     }
   }
   function stop() { if (timer) clearInterval(timer); }
@@ -136,7 +128,6 @@
     if (document.hidden) stop(); else start();
   });
 
-  // 初期化：最初の2枚が <img id="heroA/B"> に入っている前提
   start();
 </script>
 
