@@ -179,6 +179,28 @@ footer { background:#333; color:#fff; text-align:center; padding:12px; font-size
 @media (min-width: 769px) and (max-width: 1024px) {
   .gallery { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
-/* 星に溶け込ませたい時の例（好きな方だけ試す） */
-.header-char { mix-blend-mode: multiply; }  /* 影っぽく馴染む */
 
+/* ヘッダー背景の上に重ねるための土台 */
+.site-header { position: relative; }
+
+/* タイトル左にキャラ分のスペースを確保（数値は好みで微調整） */
+.header-top {
+  position: relative;
+  padding-left: clamp(90px, 12vw, 150px);
+}
+
+/* キャラを左上に絶対配置して前面に */
+.header-char {
+  position: absolute;
+  top: 6px;          /* 上下位置の微調整 */
+  left: 12px;        /* 左右位置の微調整 */
+  width: clamp(70px, 12vw, 130px);
+  height: auto;
+  z-index: 3;        /* 前面に出す（数字大きめでOK） */
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+}
+
+/* 念のため：前景レイヤに背景色が残ってたら透明化 */
+.site-header .header-inner,
+.site-header .header-top { background: transparent !important; }
