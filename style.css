@@ -239,3 +239,74 @@ nav .active { text-decoration: underline; }
 .hero-rotator { position: relative; max-width: 1100px; margin: 16px auto; aspect-ratio: 16/9; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.12); }
 .hero-rotator img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .6s ease; }
 .hero-rotator img.active { opacity: 1; }
+/* 全体背景はそのまま */
+.site-header {
+  background: url('images/header/starry-sky1.png') center/cover no-repeat, #2b2d42;
+  color: #fff;
+  padding: 16px 0;
+}
+
+/* 内部レイアウト */
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* 上段：キャラ＋タイトル＋メニューボタン */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+/* キャラ画像 */
+.header-char {
+  width: clamp(60px, 10vw, 100px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+}
+
+/* タイトル */
+.site-title {
+  margin: 0;
+  font-size: clamp(22px, 5vw, 40px);
+  color: #ff66b3;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 12px rgba(255,102,179,.35);
+  flex: 1; /* 横幅いっぱいに広がる */
+}
+
+/* ナビ（下段に独立配置） */
+#siteNav {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 1.1em;
+}
+
+/* リンクスタイル */
+#siteNav a {
+  color: #fff;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background .3s;
+}
+#siteNav a:hover,
+#siteNav a.active {
+  background: rgba(255,255,255,.2);
+}
+
+/* 小画面対応（スマホ） */
+@media (max-width: 768px) {
+  .header-top { flex-wrap: wrap; }
+  .menu-btn { margin-left: auto; }
+  #siteNav {
+    flex-direction: column;
+    display: none;
+  }
+  body.nav-open #siteNav { display: flex; }
+}
