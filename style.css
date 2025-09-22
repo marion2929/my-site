@@ -246,48 +246,51 @@ nav .active { text-decoration: underline; }
   padding: 16px 0;
 }
 
-/* 内部レイアウト */
+/* 背景など（そのままでOK） */
+.site-header {
+  background: url('images/header/starry-sky1.png') center/cover no-repeat, #2b2d42;
+  color: #fff;
+  padding: 16px 0;
+}
+
+/* ← ここが重要：縦レイアウトにするため display:block に修正 */
 .header-inner {
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 16px;
+  display: block;              /* ← 以前の display:flex を打ち消す */
 }
 
-/* 上段：キャラ＋タイトル＋メニューボタン */
+/* 上段：横並び */
 .header-top {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 12px;
 }
 
-/* キャラ画像 */
+/* キャラ画像とタイトル */
 .header-char {
   width: clamp(60px, 10vw, 100px);
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
 }
-
-/* タイトル */
 .site-title {
   margin: 0;
   font-size: clamp(22px, 5vw, 40px);
   color: #ff66b3;
   text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 12px rgba(255,102,179,.35);
-  flex: 1; /* 横幅いっぱいに広がる */
+  flex: 1;                     /* タイトルが横に広がる */
 }
 
-/* ナビ（下段に独立配置） */
+/* 下段：ナビを独立の段に */
 #siteNav {
-  margin-top: 12px;
+  margin-top: 12px;            /* ← 上段と間隔を空ける */
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
   font-size: 1.1em;
 }
-
-/* リンクスタイル */
 #siteNav a {
   color: #fff;
   text-decoration: none;
@@ -300,13 +303,11 @@ nav .active { text-decoration: underline; }
   background: rgba(255,255,255,.2);
 }
 
-/* 小画面対応（スマホ） */
+/* スマホ：☰で開閉（今まで通り） */
 @media (max-width: 768px) {
   .header-top { flex-wrap: wrap; }
   .menu-btn { margin-left: auto; }
-  #siteNav {
-    flex-direction: column;
-    display: none;
-  }
+  #siteNav { display: none; flex-direction: column; }
   body.nav-open #siteNav { display: flex; }
 }
+
