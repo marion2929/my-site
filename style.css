@@ -311,3 +311,60 @@ nav .active { text-decoration: underline; }
   body.nav-open #siteNav { display: flex; }
 }
 
+/* === ヘッダー2段レイアウトを強制（末尾に置く） === */
+.site-header .header-inner {
+  display: block !important;           /* 古い display:flex を無効化 */
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.site-header .header-top {
+  display: flex !important;            /* 上段：キャラ＋タイトル＋☰ を横並び */
+  align-items: center;
+  gap: 12px;
+}
+
+.site-header .header-char {
+  width: clamp(60px, 10vw, 100px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+}
+
+.site-header .site-title {
+  margin: 0;
+  font-size: clamp(22px, 5vw, 40px);
+  color: #ff66b3;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 12px rgba(255,102,179,.35);
+  flex: 1;
+}
+
+.site-header #siteNav {
+  margin-top: 12px;                    /* 下段に独立させる要！ */
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 1.1em;
+}
+
+.site-header #siteNav a {
+  color: #fff;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background .3s;
+}
+.site-header #siteNav a:hover,
+.site-header #siteNav a.active {
+  background: rgba(255,255,255,.2);
+}
+
+/* スマホ：☰ で開閉 */
+@media (max-width: 768px) {
+  .site-header .header-top { flex-wrap: wrap; }
+  .site-header .menu-btn { margin-left: auto; }
+  .site-header #siteNav { display: none !important; flex-direction: column; }
+  body.nav-open .site-header #siteNav { display: flex !important; }
+}
+
