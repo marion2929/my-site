@@ -1,7 +1,6 @@
-<!-- js/include.js -->
-<script>
+// js/include.js（<script> タグは不要！）
 (async function () {
-  // 部品HTMLを読み込んで差し込む（data-include="partials/header.html" など）
+  // data-include="partials/header.html" の要素に読み込む
   async function injectIncludes() {
     const targets = document.querySelectorAll('[data-include]');
     for (const el of targets) {
@@ -13,11 +12,13 @@
         el.innerHTML = html;
       } catch (e) {
         console.warn('include failed:', url, e);
+        // 目に見える簡易メッセージ（デバッグ用、不要なら消してOK）
+        el.innerHTML = '<div style="padding:8px;background:#fee;border:1px solid #fbb;color:#900;">ヘッダー読込に失敗しました: ' + url + '</div>';
       }
     }
   }
 
-  // ナビの開閉（☰）
+  // ☰ メニュー開閉
   function initMenu() {
     const btn = document.getElementById('menuBtn');
     const nav = document.getElementById('siteNav');
@@ -34,20 +35,17 @@
     });
   }
 
-  // 現在ページ（パス）に一致するリンクに active を付ける
+  // 現在ページに active を付ける
   function highlightActive() {
     const nav = document.getElementById('siteNav');
     if (!nav) return;
     const here = location.pathname.split('/').pop() || 'index.html';
     for (const a of nav.querySelectorAll('a[href]')) {
-      const href = a.getAttribute('href');
-      if (href === here) a.classList.add('active');
+      if (a.getAttribute('href') === here) a.classList.add('active');
     }
   }
 
-  // 実行順：差し込み → 初期化 → active付与
   await injectIncludes();
   initMenu();
   highlightActive();
 })();
-</script>
