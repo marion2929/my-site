@@ -4,74 +4,371 @@
   <meta charset="utf-8">
   <title>まりおんのサイト | AIアプリ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- フォント & 共通CSS -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+  <!-- 既存の共通CSS -->
   <link rel="stylesheet" href="style.css">
-
+  <!-- ページ専用の軽いスタイル -->
   <style>
-    .app-embed {
-      width: 100%;
-      height: 75vh;           /* 画面の縦75%の高さ */
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #fff;
+    .app-wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    .panel { background:#fff; border:1px solid #e5e7eb; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.06); padding:16px; margin-bottom:16px; }
+    .controls { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-top:8px; }
+    .row { display:flex; align-items:center; gap:8px; }
+    .row input[type="range"] { width: 100%; }
+    .btns { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    button, .btn {
+      background:#4CAF50; color:#fff; border:none; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer;
     }
-    .cta {
-      display: inline-block; margin: 12px 0; padding: 10px 16px;
-      background: #4CAF50; color:#fff; text-decoration:none; border-radius:6px;
-      font-weight: bold;
-    }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-secondary { background:#6b7280; }
+    .hint { color:#555; font-size:.95rem; }
+    .file-input { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .meter { height: 10px; background: #eee; border-radius: 999px; overflow: hidden; }
+    .meter > div { height:100%; width:0%; background: linear-gradient(90deg, #22c55e, #ef4444); transition: width .1s linear; }
+    canvas { width:100%; height:120px; background: #0b1020; border-radius:8px; display:block; }
+    .flex { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .grow { flex:1; }
+    @media (max-width: 768px) { canvas{ height:90px; } }
   </style>
 </head>
 <body>
-<!-- ここに共通ヘッダーを差し込む -->
-<div data-include="partials/header.html"></div>
 
-  <main>
-    <h2>Google AI Studio アプリ</h2>
-    <p>以下から私のアプリにアクセスできます。</p>
+  <!-- 共通ヘッダー（partialsを使っている場合） -->
+  <div data-include="partials/header.html"></div>
 
-    <!-- 直接開くボタン（常に動く安全策） -->
-    <p>
-      <a class="cta" href="https://ai.studio/apps/drive/15g1jt3pbfPYpvUV9t1kNsFR8O9EeBY4v" target="_blank" rel="noopener">
-        アニマルレーンキャッチを開く
-      </a>
-    </p>
+  <main class="app-wrap">
+    <h2 class="pop-font">ボイススタジオ（ブラウザ録音）</h2>
+    <p class="hint">マイクの許可を求められたら「許可」を選んでね。録音した音にエコー・音量・再生速度をかけて、WAVで保存できます。BGMを読み込んでミックスもできるよ。</p>
 
-    <p>
-      <a class="cta" href="https://ai.studio/apps/drive/1pucsyH29XDQqpGPCfU1IwxdNPCrqmAQC" target="_blank" rel="noopener">
-        活舌練習文章ジェネレーターを開く
-      </a>
-    </p>
+    <!-- レベルメーター & 波形 -->
+    <div class="panel">
+      <div class="flex">
+        <div class="grow">
+          <div class="row"><strong>入力レベル</strong></div>
+          <div class="meter"><div id="levelBar"></div></div>
+        </div>
+        <div class="row">
+          <button id="btnInit">マイク準備</button>
+          <button id="btnRec" disabled>● 録音開始</button>
+          <button id="btnStop" class="btn-secondary" disabled>■ 停止</button>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <canvas id="scope" width="1200" height="240" aria-label="波形表示"></canvas>
+      </div>
+    </div>
+
+    <!-- エフェクト / パラメータ -->
+    <div class="panel">
+      <div class="controls">
+        <div class="row">
+          <label for="gain">音量</label>
+          <input id="gain" type="range" min="0" max="2" step="0.01" value="1">
+          <span id="gainVal">1.00</span>
+        </div>
+        <div class="row">
+          <label for="delay">エコー（秒）</label>
+          <input id="delay" type="range" min="0" max="0.6" step="0.01" value="0.20">
+          <span id="delayVal">0.20</span>
+        </div>
+        <div class="row">
+          <label for="fb">エコー反射（0〜0.9）</label>
+          <input id="fb" type="range" min="0" max="0.9" step="0.01" value="0.35">
+          <span id="fbVal">0.35</span>
+        </div>
+        <div class="row">
+          <label for="rate">再生速度</label>
+          <input id="rate" type="range" min="0.6" max="1.4" step="0.01" value="1.00">
+          <span id="rateVal">1.00</span>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:6px;">※ 再生速度は録音には影響しません（再生時に反映）。書き出しWAVはエフェクト込み。</div>
+    </div>
+
+    <!-- BGM ミックス -->
+    <div class="panel">
+      <div class="file-input">
+        <strong>BGMファイル（任意）</strong>
+        <input id="bgmFile" type="file" accept="audio/*">
+        <button id="bgmClear" class="btn-secondary" disabled>クリア</button>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <label for="bgmVol">BGM音量</label>
+        <input id="bgmVol" type="range" min="0" max="1.5" step="0.01" value="0.6">
+        <span id="bgmVolVal">0.60</span>
+      </div>
+    </div>
+
+    <!-- 再生 / 保存 -->
+    <div class="panel">
+      <div class="btns">
+        <button id="btnPlay" disabled>▶ 再生</button>
+        <button id="btnDownload" disabled>⬇ WAVでダウンロード</button>
+        <a id="downloadLink" class="btn" style="display:none;">⬇ ダウンロード</a>
+      </div>
+      <audio id="player" controls style="margin-top:10px; width:100%;"></audio>
+    </div>
   </main>
 
   <footer>
     <p>© 2025 まりおん All rights reserved.</p>
   </footer>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('menuBtn');
-    const nav = document.getElementById('siteNav');
-    if (!btn || !nav) return;
+  <!-- 共通ヘッダーの読み込み（partialsを使っていない場合は不要） -->
+  <script src="js/include.js" defer></script>
 
-    btn.addEventListener('click', () => {
-      const open = document.body.classList.toggle('nav-open');
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  <!-- ページ専用スクリプト -->
+  <script>
+    // ====== Audio / UI 変数 ======
+    let ac, micStream, micNode, analyser, gainNode, delayNode, fbNode, mixDest, rec;
+    let chunks = [];
+    let bgmBuffer = null;
+    let drawing = false;
+    let playingRate = 1.0;
+
+    const $ = s => document.querySelector(s);
+    const btnInit = $('#btnInit');
+    const btnRec = $('#btnRec');
+    const btnStop = $('#btnStop');
+    const btnPlay = $('#btnPlay');
+    const btnDownload = $('#btnDownload');
+    const link = $('#downloadLink');
+    const player = $('#player');
+    const scope = $('#scope');
+    const levelBar = $('#levelBar');
+
+    const gain = $('#gain'), delay = $('#delay'), fb = $('#fb'), rate = $('#rate');
+    const gainVal = $('#gainVal'), delayVal = $('#delayVal'), fbVal = $('#fbVal'), rateVal = $('#rateVal');
+    const bgmFile = $('#bgmFile'), bgmClear = $('#bgmClear'), bgmVol = $('#bgmVol'), bgmVolVal = $('#bgmVolVal');
+
+    // ====== ヘルパ ======
+    function setEnabled(el, yes) { el.disabled = !yes; }
+    function updateLabels() {
+      gainVal.textContent = Number(gain.value).toFixed(2);
+      delayVal.textContent = Number(delay.value).toFixed(2);
+      fbVal.textContent = Number(fb.value).toFixed(2);
+      rateVal.textContent = Number(rate.value).toFixed(2);
+      bgmVolVal.textContent = Number(bgmVol.value).toFixed(2);
+    }
+    updateLabels();
+
+    // ====== AudioContext 構築 ======
+    async function initAudio() {
+      if (ac) return;
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStream = stream;
+
+      // ノード構成： mic -> gain -> delay -> feedback -> analyser -> speakers + mixDest
+      micNode = ac.createMediaStreamSource(stream);
+      gainNode = ac.createGain();
+      delayNode = ac.createDelay(1.0);
+      fbNode = ac.createGain();
+      analyser = ac.createAnalyser();
+      analyser.fftSize = 2048;
+
+      mixDest = ac.createMediaStreamDestination(); // ここに最終音を流し、MediaRecorderで録音
+      // エコーの帰り道（フィードバック）
+      delayNode.connect(fbNode);
+      fbNode.connect(delayNode);
+
+      // micの経路
+      micNode.connect(gainNode);
+      gainNode.connect(delayNode);
+      delayNode.connect(analyser);
+      analyser.connect(ac.destination);
+      analyser.connect(mixDest); // 録音用ルート
+
+      // パラメータ初期値
+      gainNode.gain.value = parseFloat(gain.value);
+      delayNode.delayTime.value = parseFloat(delay.value);
+      fbNode.gain.value = parseFloat(fb.value);
+
+      // ここがフィードバックの入出力の接続（遅延の後ろに混ぜる）
+      delayNode.connect(fbNode);
+
+      // レベルメーター＆スコープ
+      startMeterAndScope();
+
+      // MediaRecorder を最終合成ストリームに掛ける
+      rec = new MediaRecorder(mixDest.stream);
+      rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        chunks = [];
+        const url = URL.createObjectURL(blob);
+        player.src = url;
+        setEnabled(btnPlay, true);
+        setEnabled(btnDownload, true);
+        // WAVに変換してDLリンクを作る
+        webmToWav(blob).then(wavBlob => {
+          const wavUrl = URL.createObjectURL(wavBlob);
+          link.href = wavUrl;
+          link.download = 'voice_mix.wav';
+          link.style.display = 'inline-block';
+        }).catch(() => {
+          // 失敗したらwebmのままでもDL可
+          link.href = url;
+          link.download = 'voice_mix.webm';
+          link.style.display = 'inline-block';
+        });
+      };
+
+      // BGMがあれば読み込めるように
+      bgmFile.addEventListener('change', onLoadBGM);
+      bgmClear.addEventListener('click', () => { bgmBuffer = null; bgmFile.value = ''; setEnabled(bgmClear, false); });
+
+      setEnabled(btnRec, true);
+      btnInit.textContent = 'マイク準備済';
+      setEnabled(btnInit, false);
+    }
+
+    // ====== 録音・停止 ======
+    btnInit.addEventListener('click', async () => {
+      try { await initAudio(); } catch(e){ alert('マイクの初期化に失敗：' + e.message); }
     });
 
-    nav.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A') {
-        document.body.classList.remove('nav-open');
-        btn.setAttribute('aria-expanded', 'false');
+    btnRec.addEventListener('click', async () => {
+      if (!ac) { await initAudio(); }
+      // BGMも合成する：AudioBufferSourceを都度作成
+      if (bgmBuffer) {
+        const bgmSrc = ac.createBufferSource();
+        const bgmGain = ac.createGain();
+        bgmGain.gain.value = parseFloat(bgmVol.value);
+        bgmSrc.buffer = bgmBuffer;
+        bgmSrc.loop = true; // ループ再生（必要ならfalseに）
+        bgmSrc.connect(bgmGain).connect(ac.destination);
+        bgmGain.connect(mixDest); // 録音にも混ぜる
+        bgmSrc.start();
+        // 停止時に止めるため保持
+        btnStop._bgmSrc = bgmSrc;
       }
+      rec.start(100); // 100ms刻みでデータを受け取る
+      setEnabled(btnRec, false);
+      setEnabled(btnStop, true);
     });
-  });
-</script>
-<script src="js/include.js"></script>
+
+    btnStop.addEventListener('click', () => {
+      if (rec && rec.state !== 'inactive') rec.stop();
+      if (btnStop._bgmSrc) { try { btnStop._bgmSrc.stop(); } catch(_){} btnStop._bgmSrc = null; }
+      setEnabled(btnStop, false);
+      setEnabled(btnRec, true);
+    });
+
+    // ====== 再生（速度反映） ======
+    rate.addEventListener('input', () => {
+      rateVal.textContent = Number(rate.value).toFixed(2);
+      playingRate = parseFloat(rate.value);
+      player.playbackRate = playingRate;
+    });
+    btnPlay.addEventListener('click', () => {
+      if (player.src) { player.playbackRate = playingRate; player.play(); }
+    });
+
+    // ====== パラメータ連動 ======
+    gain.addEventListener('input', () => { gainVal.textContent = Number(gain.value).toFixed(2); if(gainNode) gainNode.gain.value = parseFloat(gain.value); });
+    delay.addEventListener('input', () => { delayVal.textContent = Number(delay.value).toFixed(2); if(delayNode) delayNode.delayTime.value = parseFloat(delay.value); });
+    fb.addEventListener('input', () => { fbVal.textContent = Number(fb.value).toFixed(2); if(fbNode) fbNode.gain.value = parseFloat(fb.value); });
+    bgmVol.addEventListener('input', () => { bgmVolVal.textContent = Number(bgmVol.value).toFixed(2); });
+
+    // ====== レベルメーター & 波形描画 ======
+    function startMeterAndScope() {
+      const ctx2d = scope.getContext('2d');
+      const buf = new Uint8Array(analyser.fftSize);
+      drawing = true;
+      (function draw() {
+        if (!drawing) return;
+        requestAnimationFrame(draw);
+        analyser.getByteTimeDomainData(buf);
+
+        // レベルメータ
+        let peak = 0;
+        for (let i=0;i<buf.length;i++){ const v = Math.abs(buf[i]-128)/128; if (v>peak) peak=v; }
+        levelBar.style.width = Math.min(100, Math.floor(peak*140)) + '%';
+
+        // 波形
+        ctx2d.clearRect(0,0,scope.width,scope.height);
+        ctx2d.strokeStyle = '#7dd3fc';
+        ctx2d.beginPath();
+        const mid = scope.height/2; 
+        for (let x=0; x<scope.width; x++){
+          const i = Math.floor(x / scope.width * buf.length);
+          const y = mid + (buf[i]-128)/128 * (scope.height/2 - 6);
+          if (x===0) ctx2d.moveTo(x,y); else ctx2d.lineTo(x,y);
+        }
+        ctx2d.stroke();
+      })();
+    }
+
+    // ====== BGM 読み込み ======
+    async function onLoadBGM() {
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      const file = bgmFile.files[0];
+      if (!file) return;
+      const arrayBuf = await file.arrayBuffer();
+      try {
+        bgmBuffer = await ac.decodeAudioData(arrayBuf);
+        setEnabled(bgmClear, true);
+      } catch(e) {
+        alert('この音声は読み込めませんでした。別のファイルを試してください。');
+        bgmBuffer = null;
+        setEnabled(bgmClear, false);
+      }
+    }
+
+    // ====== webm → wav 変換（簡易） ======
+    async function webmToWav(webmBlob) {
+      // ブラウザ標準だけで安全にWAV化するため、AudioContextでデコード→WAVエンコード
+      const arrayBuf = await webmBlob.arrayBuffer();
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const audioBuf = await ctx.decodeAudioData(arrayBuf);
+
+      // PCM を取り出して WAV にパック
+      const numCh = audioBuf.numberOfChannels;
+      const sampleRate = audioBuf.sampleRate;
+      const length = audioBuf.length;
+      // interleave
+      const pcm = new Float32Array(length * numCh);
+      for (let ch=0; ch<numCh; ch++){
+        const data = audioBuf.getChannelData(ch);
+        for (let i=0; i<length; i++){
+          pcm[i*numCh + ch] = data[i];
+        }
+      }
+      // WAV ヘッダ作成
+      function floatTo16BitPCM(output, offset, input){
+        for (let i=0; i<input.length; i++, offset+=2){
+          let s = Math.max(-1, Math.min(1, input[i]));
+          output.setInt16(offset, s<0 ? s*0x8000 : s*0x7FFF, true);
+        }
+      }
+      function writeString(view, offset, str){ for (let i=0; i<str.length; i++) view.setUint8(offset+i, str.charCodeAt(i)); }
+
+      const bytesPerSample = 2;
+      const blockAlign = numCh * bytesPerSample;
+      const buffer = new ArrayBuffer(44 + pcm.length * bytesPerSample);
+      const view = new DataView(buffer);
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + pcm.length * bytesPerSample, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true); // PCM
+      view.setUint16(22, numCh, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * blockAlign, true);
+      view.setUint16(32, blockAlign, true);
+      view.setUint16(34, 16, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, pcm.length * bytesPerSample, true);
+      floatTo16BitPCM(view, 44, pcm);
+      return new Blob([view], { type: 'audio/wav' });
+    }
+
+    // 初回ガイド
+    setEnabled(btnRec, false);
+    setEnabled(btnStop, false);
+    setEnabled(btnPlay, false);
+    setEnabled(btnDownload, false);
+    btnDownload.addEventListener('click', () => link.click());
+  </script>
 </body>
 </html>
