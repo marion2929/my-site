@@ -173,3 +173,7 @@ footer { background:#333; color:#fff; text-align:center; padding:12px; font-size
 @media (min-width: 769px) and (max-width: 1024px) {
   .gallery { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
+
+.dropzone input[type="file"] {
+  display: none;
+}
