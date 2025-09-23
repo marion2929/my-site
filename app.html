@@ -10,6 +10,20 @@
     .app-wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
     .panel { background:#fff; border:1px solid #e5e7eb; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.06); padding:16px; margin-bottom:16px; }
 
+  .btn-secondary {
+    background:#6b7280;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:10px 14px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .hint {
+    color:#555;
+    font-size:.95rem;
+  }
+
     /* アップロード（DnD対応） */
     .dropzone {
       border: 2px dashed #4CAF50;
@@ -106,6 +120,25 @@
       <h3>④ 録音・同期・MIX（次のステップで実装）</h3>
       <div class="todo">
         ここに「録音ボタン」「同期再生」「MIX」「完成動画スロット（最大3つ）」のUIを順番に追加していきます。
+<!-- ④ 録音（動画と同期再生） -->
+<section class="panel">
+  <h3>④ 録音（動画と同期）</h3>
+  <div class="info-row" style="margin-bottom:8px;">
+    <button id="micInit">マイク準備</button>
+    <button id="recStart" disabled>● 録音開始</button>
+    <button id="recStop" class="btn-secondary" disabled>■ 停止</button>
+    <button id="recClear" class="btn-secondary" disabled>⟳ 録り直し</button>
+    <span class="badge" id="recStatus">未録音</span>
+  </div>
+
+  <!-- 録音済み音声のプレビュー（同期ONのときは動画に追従） -->
+  <div class="info-row">
+    <label><input type="checkbox" id="syncToggle" checked> 動画と同期再生する</label>
+    <audio id="voice" controls preload="metadata" style="flex:1;"></audio>
+  </div>
+  <p class="hint">※ 録音ボタンを押すと以前の録音はリセットされます。同期ONのときは動画の再生/一時停止/シーク/速度変更に音声が追従します。</p>
+</section>
+
       </div>
     </section>
   </main>
@@ -229,5 +262,140 @@
       videos.forEach(v => URL.revokeObjectURL(v.url));
     });
   </script>
+
+// ===== ステップ2：録音 + 同期再生 =====
+const micInitBtn = document.getElementById('micInit');
+const recStartBtn = document.getElementById('recStart');
+const recStopBtn  = document.getElementById('recStop');
+const recClearBtn = document.getElementById('recClear');
+const recStatus   = document.getElementById('recStatus');
+const syncToggle  = document.getElementById('syncToggle');
+const voice       = document.getElementById('voice');
+
+let micStream = null;
+let mediaRecorder = null;
+let recChunks = [];
+let voiceUrl = null;
+
+// マイク初期化
+micInitBtn.addEventListener('click', async () => {
+  try {
+    // すでに初期化済みなら何もしない
+    if (micStream) { 
+      micInitBtn.textContent = 'マイク準備済';
+      micInitBtn.disabled = true;
+      recStartBtn.disabled = false;
+      return;
+    }
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(micStream);
+    mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size) recChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      // 前回の録音は破棄（上書き）
+      if (voiceUrl) URL.revokeObjectURL(voiceUrl);
+      const blob = new Blob(recChunks, { type: 'audio/webm' });
+      recChunks = [];
+      voiceUrl = URL.createObjectURL(blob);
+      voice.src = voiceUrl;
+      recStatus.textContent = '録音完了';
+      recClearBtn.disabled = false;
+    };
+    micInitBtn.textContent = 'マイク準備済';
+    micInitBtn.disabled = true;
+    recStartBtn.disabled = false;
+  } catch (e) {
+    alert('マイクの初期化に失敗しました: ' + e.message);
+  }
+});
+
+// 録音開始（前の録音は上書き）
+recStartBtn.addEventListener('click', () => {
+  if (!mediaRecorder) return;
+  // 既存の録音があればクリア
+  if (voiceUrl) { URL.revokeObjectURL(voiceUrl); voiceUrl = null; voice.removeAttribute('src'); }
+  recChunks = [];
+  try { mediaRecorder.start(100); } catch(_) { return; }
+  recStatus.textContent = '録音中…';
+  recStartBtn.disabled = true;
+  recStopBtn.disabled = false;
+  recClearBtn.disabled = true;
+});
+
+// 録音停止
+recStopBtn.addEventListener('click', () => {
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+  mediaRecorder.stop();
+  recStopBtn.disabled = true;
+  recStartBtn.disabled = false;
+});
+
+// 録り直し（音声消去）
+recClearBtn.addEventListener('click', () => {
+  if (voiceUrl) { URL.revokeObjectURL(voiceUrl); voiceUrl = null; }
+  voice.removeAttribute('src');
+  recStatus.textContent = '未録音';
+  recClearBtn.disabled = true;
+});
+
+// ===== 同期再生：動画(mainPlayer)に音声(voice)を追従させる =====
+function bindSync() {
+  const v = mainPlayer, a = voice;
+  // 再生/一時停止
+  v.addEventListener('play', () => {
+    if (!syncToggle.checked || !a.src) return;
+    a.playbackRate = v.playbackRate;
+    a.currentTime = v.currentTime;
+    a.play().catch(()=>{ /* ユーザー操作起点が必要な場合あり */ });
+  });
+  v.addEventListener('pause', () => {
+    if (!syncToggle.checked || !a.src) return;
+    a.pause();
+  });
+  // シーク・レート変更・終了
+  v.addEventListener('seeking', () => {
+    if (!syncToggle.checked || !a.src) return;
+    a.currentTime = v.currentTime;
+  });
+  v.addEventListener('ratechange', () => {
+    if (!syncToggle.checked || !a.src) return;
+    a.playbackRate = v.playbackRate;
+  });
+  v.addEventListener('ended', () => {
+    if (!syncToggle.checked || !a.src) return;
+    a.pause();
+    a.currentTime = 0;
+  });
+
+  // 同期ON/OFFを切り替えた瞬間の合わせ込み
+  syncToggle.addEventListener('change', () => {
+    if (!a.src) return;
+    if (syncToggle.checked) {
+      a.playbackRate = v.playbackRate;
+      a.currentTime  = v.currentTime;
+      if (!v.paused) a.play().catch(()=>{});
+    } else {
+      a.pause();
+    }
+  });
+}
+bindSync();
+
+// 新しい動画を選んだ時、同期ONなら音声の位置も合わせる
+function syncToHeadIfNeeded() {
+  if (syncToggle.checked && voice.src) {
+    voice.currentTime = mainPlayer.currentTime || 0;
+    voice.playbackRate = mainPlayer.playbackRate || 1;
+    if (!mainPlayer.paused) voice.play().catch(()=>{});
+  }
+}
+
+// 既存の selectVideo を呼ぶ箇所の直後で呼ばれるように、フックしておく
+const _selectVideoOriginal = selectVideo;
+selectVideo = function(index) {
+  _selectVideoOriginal(index);
+  // 動画切替直後に位置合わせ
+  syncToHeadIfNeeded();
+};
+
 </body>
 </html>
