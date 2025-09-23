@@ -95,7 +95,6 @@
         <!-- ← ここを hidden にするだけ！ -->
         <input id="fileInput" type="file" accept="video/*" multiple hidden>
       </label>
-
     </section>
 
     <!-- 2) アップ済み動画（横スクロールで並べる）＋「これを使う」ボタン -->
@@ -139,6 +138,23 @@
     <audio id="voice" controls preload="metadata" style="flex:1;"></audio>
   </div>
   <p class="hint">※ 録音ボタンを押すと以前の録音はリセットされます。同期ONのときは動画の再生/一時停止/シーク/速度変更に音声が追従します。</p>
+</section>
+
+<!-- ⑤ MIX（動画＋録音音声を1本の動画に書き出し） -->
+<section class="panel">
+  <h3>⑤ MIX（動画＋音声を書き出し）</h3>
+  <div class="info-row">
+    <button id="mixStart">MIXを作成（WebM）</button>
+    <span class="badge" id="mixStatus">準備OK</span>
+  </div>
+  <p class="hint">※ MIX中は動画が頭から自動再生されます（元動画の音声はミュート）。処理後にプレビューとダウンロードができます。</p>
+</section>
+
+<!-- ⑥ 完成動画（最大3つまで保存・再生可能） -->
+<section class="panel">
+  <h3>⑥ 完成した動画</h3>
+  <div class="strip" id="outStrip"></div>
+  <p class="hint">※ それぞれ「これを使う」で上のプレイヤーに読み込み、再生できます。</p>
 </section>
 
       </div>
@@ -397,7 +413,175 @@ selectVideo = function(index) {
   // 動画切替直後に位置合わせ
   syncToHeadIfNeeded();
 };
-
   </script>
+
+<script>
+// ===== ステップ3：MIX（動画 + 録音音声 → 1本のWebM） =====
+const mixBtn = document.getElementById('mixStart');
+const mixStatus = document.getElementById('mixStatus');
+const outStrip = document.getElementById('outStrip');
+
+// 完成動画（最大3件まで）
+/** @type {{name:string, url:string, blob:Blob}[]} */
+const outputs = [];
+
+mixBtn.addEventListener('click', async () => {
+  // 前提チェック
+  if (!mainPlayer.src) {
+    alert('先に動画を選んでください。');
+    return;
+  }
+  if (!voice.src) {
+    alert('先に音声を録音してください。');
+    return;
+  }
+
+  try {
+    mixBtn.disabled = true;
+    mixStatus.textContent = 'MIX中…（しばらくお待ちください）';
+
+    // 1) 映像トラックを取得（元動画の音は使わないのでミュート）
+    const wasMuted = mainPlayer.muted;
+    mainPlayer.muted = true;
+    const vStream = mainPlayer.captureStream();
+    const [videoTrack] = vStream.getVideoTracks();
+    if (!videoTrack) {
+      throw new Error('このブラウザは captureStream() から映像トラックを取得できません。');
+    }
+
+    // 2) 録音音声をAudioContextで流して、MediaStreamDestinationとして取り出す
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const dest = ac.createMediaStreamDestination();
+
+    // 再生用の隠しaudioを用意（voice要素を直接使うと再生UIが干渉しやすいので別インスタンス）
+    const a = new Audio();
+    a.src = voice.src;          // さっき録音した音声（blob URL）
+    a.playbackRate = mainPlayer.playbackRate;
+    a.crossOrigin = 'anonymous'; // blob URLなら不要だが念のため
+    a.preload = 'auto';
+    a.muted = false;            // ここはデスクトップ出力にはつながないので音は出ません
+
+    // AudioContextにルーティング
+    const srcNode = ac.createMediaElementSource(a);
+    srcNode.connect(dest);      // → 録音用
+    // srcNode.connect(ac.destination); // ← 同時にスピーカーにも出したいなら有効化
+
+    // 3) 合体ストリーム（映像 + マイク音声）を作成
+    const composed = new MediaStream([videoTrack, ...dest.stream.getAudioTracks()]);
+
+    // 4) MediaRecorderで録画開始（WebM）
+    const options = { mimeType: 'video/webm; codecs=vp9,opus' };
+    let recorder;
+    try {
+      recorder = new MediaRecorder(composed, options);
+    } catch (_) {
+      recorder = new MediaRecorder(composed); // ブラウザが指定を拒否したらフォールバック
+    }
+    const chunks = [];
+    recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    const stopRecording = () => new Promise(resolve => {
+      recorder.onstop = () => resolve(new Blob(chunks, { type: 'video/webm' }));
+      if (recorder.state !== 'inactive') recorder.stop();
+    });
+
+    // 5) 再生を頭出しして同時スタート
+    mainPlayer.currentTime = 0;
+    a.currentTime = 0;
+    // Safari等対策：ユーザー操作起点で一度でも再生しておくと安定
+    await mainPlayer.play().catch(()=>{});
+    await a.play().catch(()=>{});  // AudioContextの再生開始
+
+    recorder.start(250);
+
+    // 6) 動画の終了で録画を止める
+    const ended = new Promise(resolve => {
+      const onEnd = () => { mainPlayer.removeEventListener('ended', onEnd); resolve(); };
+      mainPlayer.addEventListener('ended', onEnd);
+    });
+    await ended;
+
+    const outBlob = await stopRecording();
+
+    // 後処理
+    mainPlayer.pause();
+    a.pause();
+    srcNode.disconnect();
+    // ac.close(); // 連続でMIXしたいなら閉じなくてもOK
+    mainPlayer.muted = wasMuted;
+
+    // 7) 完成品としてUIに追加（最大3件まで）
+    const url = URL.createObjectURL(outBlob);
+    const name = (selectedName.textContent || 'output') + '_' + new Date().toISOString().replace(/[:.]/g,'-') + '.webm';
+    outputs.push({ name, url, blob: outBlob });
+    while (outputs.length > 3) {
+      const old = outputs.shift();
+      try { URL.revokeObjectURL(old.url); } catch {}
+    }
+    renderOutputs();
+
+    mixStatus.textContent = 'MIX完了！';
+    mixBtn.disabled = false;
+  } catch (e) {
+    console.error(e);
+    alert('MIXに失敗しました：' + e.message);
+    mixStatus.textContent = 'エラー';
+    mixBtn.disabled = false;
+  }
+});
+
+// 完成動画ストリップの描画
+function renderOutputs() {
+  outStrip.innerHTML = '';
+  outputs.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    const v = document.createElement('video');
+    v.src = item.url;
+    v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true;
+    thumb.appendChild(v);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = item.name;
+
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.gap = '8px';
+
+    const useBtn = document.createElement('div');
+    useBtn.className = 'btn';
+    useBtn.textContent = 'これを使う';
+    useBtn.addEventListener('click', () => {
+      const wasPlaying = !mainPlayer.paused;
+      mainPlayer.src = item.url;
+      mainPlayer.currentTime = 0;
+      selectedName.textContent = item.name;
+      if (wasPlaying) mainPlayer.play().catch(()=>{});
+    });
+
+    const dlBtn = document.createElement('a');
+    dlBtn.className = 'btn';
+    dlBtn.textContent = 'ダウンロード';
+    dlBtn.href = item.url;
+    dlBtn.download = item.name;
+
+    row.appendChild(useBtn);
+    row.appendChild(dlBtn);
+
+    meta.appendChild(name);
+    meta.appendChild(row);
+
+    card.appendChild(thumb);
+    card.appendChild(meta);
+    outStrip.appendChild(card);
+  });
+}
+ </script>
+
 </body>
 </html>
