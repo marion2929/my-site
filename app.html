@@ -92,8 +92,10 @@
       <label class="dropzone" id="dropzone">
         <div><strong>ここをクリック</strong> または <strong>動画ファイルをドラッグ＆ドロップ</strong></div>
         <div class="hint">複数アップロード可 / ブラウザ内だけで処理されます</div>
-        <input id="fileInput" type="file" accept="video/*" multiple />
+        <!-- ← ここを hidden にするだけ！ -->
+        <input id="fileInput" type="file" accept="video/*" multiple hidden>
       </label>
+
     </section>
 
     <!-- 2) アップ済み動画（横スクロールで並べる）＋「これを使う」ボタン -->
