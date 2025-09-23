@@ -19,14 +19,13 @@ a { color: inherit; text-decoration: none; }
 main { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
 footer { background:#333; color:#fff; text-align:center; padding:12px; font-size:14px; }
 
-/* Google Fonts を使う見出し用（<head>で Mochiy Pop One を読み込み） */
+/* 見出し用（<head>で Mochiy Pop One を読み込み） */
 .pop-font { font-family: 'Mochiy Pop One', sans-serif; }
 
 /* =========================
-   ヘッダー（上：キャラ＋タイトル、下：ナビ）
+   ヘッダー（上：タイトル、下：ナビ）
    ========================= */
 .site-header {
-  position: relative;  /* 背景の上にキャラを重ねる土台 */
   background: url('images/header/starry-sky1.png') center/cover no-repeat, #2b2d42;
   color: #fff;
   padding: 16px 0;
@@ -35,32 +34,34 @@ footer { background:#333; color:#fff; text-align:center; padding:12px; font-size
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 16px;
-  display: block;      /* 上下2段にしたいので block */
+  display: block;                   /* 2段構成（上：タイトル行 / 下：ナビ） */
 }
-
-/* 上段：キャラ（左）＋ タイトル ＋ ☰ボタン */
 .header-top {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-
 .site-title {
   margin: 0;
   font-size: clamp(22px, 5vw, 40px);
   line-height: 1.1;
   color: #ff66b3;
   text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 12px rgba(255,102,179,.35);
-  flex: 1;  /* タイトルを横に広げてバランス取り */
+  flex: 1;
 }
+/* ☰ メニュー（PC隠し） */
 .menu-btn {
-  display: none;       /* PCでは隠す。スマホで表示 */
+  display: none;
   background: rgba(255,255,255,.15);
-  color:#fff; border: none; border-radius: 6px;
-  font-size: 20px; width: 40px; height: 36px; cursor: pointer;
+  color:#fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 20px;
+  width: 40px; height: 36px;
+  cursor: pointer;
 }
 
-/* 下段：ナビ（リンク群） */
+/* ナビ */
 #siteNav {
   margin-top: 12px;
   display: flex;
@@ -78,7 +79,7 @@ footer { background:#333; color:#fff; text-align:center; padding:12px; font-size
 #siteNav a.active { background: rgba(255,255,255,.2); }
 
 /* =========================
-   スライドショー（ホーム）
+   ホームのスライドショー
    ========================= */
 .hero-rotator {
   position: relative;
@@ -107,9 +108,15 @@ footer { background:#333; color:#fff; text-align:center; padding:12px; font-size
   gap: 16px;
   padding: 10px 0;
 }
-.gallery.large { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.gallery.large {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
 .card {
-  background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  overflow:hidden;
   box-shadow:0 1px 2px rgba(0,0,0,.05);
 }
 .card img { width:100%; }
@@ -119,10 +126,14 @@ footer { background:#333; color:#fff; text-align:center; padding:12px; font-size
 .category-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px; padding: 10px 0;
+  gap: 16px;
+  padding: 10px 0;
 }
 .category-card {
-  background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  overflow:hidden;
   box-shadow:0 2px 6px rgba(0,0,0,.06);
 }
 .category-card img { width:100%; display:block; }
@@ -130,7 +141,12 @@ footer { background:#333; color:#fff; text-align:center; padding:12px; font-size
 .category-card h3 { margin:0 0 8px; font-size:1.05rem; }
 .category-card p { margin:0 0 10px; color:#555; font-size:.95rem; }
 .category-card .btn {
-  display:inline-block; padding:8px 12px; background:#4CAF50; color:#fff; border-radius:6px; text-decoration:none; font-weight:700;
+  display:inline-block;
+  padding:8px 12px;
+  background:#4CAF50;
+  color:#fff;
+  border-radius:6px;
+  font-weight:700;
 }
 .category-card .btn:hover { filter: brightness(1.05); }
 
@@ -169,16 +185,13 @@ footer { background:#333; color:#fff; text-align:center; padding:12px; font-size
   .gallery { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
   .hero-rotator { margin: 12px auto; }
 }
-
 @media (min-width: 769px) and (max-width: 1024px) {
   .gallery { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
 
-.dropzone {
-  display: block;   /* ラベル全体を1つのブロックに */
-  position: relative;
-}
-
-.dropzone input[type="file"] {
-  display: none !important;   /* ファイル入力欄を完全非表示 */
-}
+/* =========================
+   共通ユーティリティ
+   ========================= */
+/* app.html の dropzone 内 input を確実に不可視に */
+.dropzone { display:block; position:relative; }
+.dropzone input[type="file"] { display: none !important; }

@@ -6,76 +6,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* --- ページ内専用スタイル（グローバルを汚さない軽量版） --- */
+    /* --- ページ専用の軽量スタイル --- */
     .app-wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
     .panel { background:#fff; border:1px solid #e5e7eb; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.06); padding:16px; margin-bottom:16px; }
-
-  .btn-secondary {
-    background:#6b7280;
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    padding:10px 14px;
-    font-weight:700;
-    cursor:pointer;
-  }
-  .hint {
-    color:#555;
-    font-size:.95rem;
-  }
+    .info-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .badge { display:inline-block; background:#eef6ff; color:#0b57d0; border:1px solid #cfe2ff; padding:4px 8px; border-radius:8px; font-size:.9rem; }
+    .btn-secondary { background:#6b7280; color:#fff; border:none; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
+    .hint { color:#555; font-size:.95rem; }
 
     /* アップロード（DnD対応） */
     .dropzone {
-      border: 2px dashed #4CAF50;
-      border-radius: 12px;
-      background: #f7fff8;
-      padding: 20px;
-      text-align: center;
-      transition: background .2s, border-color .2s;
-      cursor: pointer;
+      border: 2px dashed #4CAF50; border-radius: 12px; background: #f7fff8;
+      padding: 20px; text-align: center; transition: background .2s, border-color .2s; cursor: pointer;
+      display:block; position:relative;
     }
     .dropzone.dragover { background:#ecfff0; border-color:#2ca04a; }
-    .dropzone input[type="file"] { display: none; }
-    .dropzone .hint { color:#555; font-size:.95rem; margin-top:6px; }
+    .dropzone input[type="file"] { display: none; }  /* ←見せない */
 
     /* 横スクロールのサムネリスト */
-    .strip {
-      display: flex; gap:12px;
-      overflow-x: auto; padding: 8px 4px;
-      scroll-snap-type: x mandatory;
-    }
+    .strip { display:flex; gap:12px; overflow-x:auto; padding:8px 4px; scroll-snap-type:x mandatory; }
     .card {
-      flex: 0 0 220px;
-      border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;
-      background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.05);
-      scroll-snap-align: start;
-      display:flex; flex-direction:column;
+      flex: 0 0 220px; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;
+      background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.05); scroll-snap-align:start; display:flex; flex-direction:column;
     }
-    .thumb {
-      aspect-ratio: 16/9; background:#111; position:relative;
-    }
-    .thumb video {
-      position:absolute; inset:0; width:100%; height:100%;
-      object-fit:cover;
-    }
+    .thumb { aspect-ratio:16/9; background:#111; position:relative; }
+    .thumb video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
     .card .meta { padding:10px; display:flex; flex-direction:column; gap:8px; }
-    .card .meta .name { font-size:.92rem; color:#333; word-break: break-all; }
+    .card .meta .name { font-size:.92rem; color:#333; word-break:break-all; }
     .card .meta .btn { background:#4CAF50; color:#fff; text-align:center; padding:8px 10px; border-radius:8px; font-weight:700; cursor:pointer; user-select:none; }
-    .card .meta .btn:hover { filter: brightness(1.05); }
+    .card .meta .btn:hover { filter:brightness(1.05); }
 
     /* 再生プレイヤー */
-    .player {
-      display: grid; grid-template-columns: 1fr;
-      gap: 8px;
-    }
-    .player video {
-      width: 100%; max-height: 60vh; background:#000; border-radius:12px;
-    }
-    .info-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .badge { display:inline-block; background:#eef6ff; color:#0b57d0; border:1px solid #cfe2ff; padding:4px 8px; border-radius:8px; font-size:.9rem; }
+    .player { display:grid; grid-template-columns:1fr; gap:8px; }
+    .player video { width:100%; max-height:60vh; background:#000; border-radius:12px; }
 
-    /* 後で追加するコントローラーの箱だけ用意（録音/同期/MIX） */
-    .todo { padding:12px; border:1px dashed #d1d5db; color:#374151; background:#f9fafb; border-radius:8px; }
+    /* カウントダウンのオーバーレイ（画面全体） */
+    #countdownOverlay {
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.55); z-index:2000; color:#fff; font-size:72px; font-weight:900;
+    }
+    #countNum { text-shadow:0 6px 24px rgba(0,0,0,.5); }
   </style>
 </head>
 <body>
@@ -84,27 +54,26 @@
   <div data-include="partials/header.html"></div>
 
   <main class="app-wrap">
-    <h2 class="pop-font">動画に合わせて録音するツール（ステップ1：動画選択）</h2>
+    <h2 class="pop-font">動画に合わせて録音するツール</h2>
 
-    <!-- 1) 動画アップロード（クリック & ドラッグ&ドロップ） -->
+    <!-- ① 動画アップロード -->
     <section class="panel">
       <h3>① 動画をアップロード</h3>
       <label class="dropzone" id="dropzone">
         <div><strong>ここをクリック</strong> または <strong>動画ファイルをドラッグ＆ドロップ</strong></div>
         <div class="hint">複数アップロード可 / ブラウザ内だけで処理されます</div>
-        <!-- ← ここを hidden にするだけ！ -->
         <input id="fileInput" type="file" accept="video/*" multiple hidden>
       </label>
     </section>
 
-    <!-- 2) アップ済み動画（横スクロールで並べる）＋「これを使う」ボタン -->
+    <!-- ② アップ済み動画一覧 -->
     <section class="panel">
       <h3>② アップした動画一覧</h3>
       <div class="strip" id="strip"></div>
-      <div class="hint" style="color:#555; font-size:.95rem; margin-top:6px;">※ サムネは自動再生（ミュート）します。負荷が高い時は停止する場合があります。</div>
+      <div class="hint" style="margin-top:6px;">※ サムネは自動再生（ミュート）します。負荷が高い時は停止する場合があります。</div>
     </section>
 
-    <!-- 3) 再生プレイヤー（選択反映） -->
+    <!-- ③ 再生プレイヤー -->
     <section class="panel">
       <h3>③ 動画再生</h3>
       <div class="player">
@@ -116,48 +85,43 @@
       </div>
     </section>
 
-    <!-- 以降の機能は次ステップで追加予定（録音/同期/MIX/完成スロット） -->
+    <!-- ④ 録音（カウントダウン & 同時スタート & 同期再生） -->
     <section class="panel">
-      <h3>④ 録音・同期・MIX（次のステップで実装）</h3>
-      <div class="todo">
-
-<!-- ④ 録音（動画と同期再生） -->
-<section class="panel">
-  <h3>④ 録音（動画と同期）</h3>
-  <div class="info-row" style="margin-bottom:8px;">
-    <button id="micInit">マイク準備</button>
-    <button id="recStart" disabled>● 録音開始</button>
-    <button id="recStop" class="btn-secondary" disabled>■ 停止</button>
-    <button id="recClear" class="btn-secondary" disabled>⟳ 録り直し</button>
-    <span class="badge" id="recStatus">未録音</span>
-  </div>
-
-  <!-- 録音済み音声のプレビュー（同期ONのときは動画に追従） -->
-  <div class="info-row">
-    <label><input type="checkbox" id="syncToggle" checked> 動画と同期再生する</label>
-    <audio id="voice" controls preload="metadata" style="flex:1;"></audio>
-  </div>
-  <p class="hint">※ 録音ボタンを押すと以前の録音はリセットされます。同期ONのときは動画の再生/一時停止/シーク/速度変更に音声が追従します。</p>
-</section>
-
-<!-- ⑤ MIX（動画＋録音音声を1本の動画に書き出し） -->
-<section class="panel">
-  <h3>⑤ MIX（動画＋音声を書き出し）</h3>
-  <div class="info-row">
-    <button id="mixStart">MIXを作成（WebM）</button>
-    <span class="badge" id="mixStatus">準備OK</span>
-  </div>
-  <p class="hint">※ MIX中は動画が頭から自動再生されます（元動画の音声はミュート）。処理後にプレビューとダウンロードができます。</p>
-</section>
-
-<!-- ⑥ 完成動画（最大3つまで保存・再生可能） -->
-<section class="panel">
-  <h3>⑥ 完成した動画</h3>
-  <div class="strip" id="outStrip"></div>
-  <p class="hint">※ それぞれ「これを使う」で上のプレイヤーに読み込み、再生できます。</p>
-</section>
-
+      <h3>④ 録音（動画と同期）</h3>
+      <div class="info-row" style="margin-bottom:8px;">
+        <button id="micInit">マイク準備</button>
+        <button id="recStart" disabled>● 録音開始</button>
+        <button id="recStop" class="btn-secondary" disabled>■ 停止</button>
+        <button id="recClear" class="btn-secondary" disabled>⟳ 録り直し</button>
+        <span class="badge" id="recStatus">未録音</span>
       </div>
+      <div class="info-row" style="margin-top:6px;">
+        <label><input type="checkbox" id="playVideoSound" checked> 録音中は動画の音を再生する</label>
+        <label><input type="checkbox" id="syncToggle" checked> 動画と同期再生する</label>
+      </div>
+      <div class="info-row">
+        <audio id="voice" controls preload="metadata" style="flex:1;"></audio>
+      </div>
+      <!-- カウントダウンオーバーレイ -->
+      <div id="countdownOverlay" aria-hidden="true"><div id="countNum">3</div></div>
+      <p class="hint">※ 録音ボタンを押すと以前の録音はリセットされます。同期ONのときは動画の再生/一時停止/シーク/速度変更に音声が追従します。</p>
+    </section>
+
+    <!-- ⑤ MIX（動画＋録音音声を書き出し） -->
+    <section class="panel">
+      <h3>⑤ MIX（動画＋音声を書き出し）</h3>
+      <div class="info-row">
+        <button id="mixStart">MIXを作成（WebM）</button>
+        <span class="badge" id="mixStatus">準備OK</span>
+      </div>
+      <p class="hint">※ MIX中は動画が頭から自動再生されます（元動画の音声はミュート）。処理後にプレビューとダウンロードができます。</p>
+    </section>
+
+    <!-- ⑥ 完成動画（最大3つ） -->
+    <section class="panel">
+      <h3>⑥ 完成した動画</h3>
+      <div class="strip" id="outStrip"></div>
+      <p class="hint">※ 「これを使う」で上のプレイヤーに読み込み、「ダウンロード」で保存できます。</p>
     </section>
   </main>
 
@@ -168,420 +132,256 @@
   <!-- 共通ヘッダーの読み込み -->
   <script src="js/include.js" defer></script>
 
-  <!-- ページ専用JS -->
+  <!-- ページ専用JS（アップロード〜再生〜録音〜MIX 一式） -->
   <script>
-    // ------- 参照 -------
+    /* ========== 参照 ========== */
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
     const strip = document.getElementById('strip');
     const mainPlayer = document.getElementById('mainPlayer');
     const selectedName = document.getElementById('selectedName');
 
-    // アップロード済み動画の管理（オブジェクトURLを保持）
+    const micInitBtn = document.getElementById('micInit');
+    const recStartBtn = document.getElementById('recStart');
+    const recStopBtn  = document.getElementById('recStop');
+    const recClearBtn = document.getElementById('recClear');
+    const recStatus   = document.getElementById('recStatus');
+
+    const playVideoSound = document.getElementById('playVideoSound');
+    const syncToggle     = document.getElementById('syncToggle');
+    const voice          = document.getElementById('voice');
+
+    const mixBtn = document.getElementById('mixStart');
+    const mixStatus = document.getElementById('mixStatus');
+    const outStrip = document.getElementById('outStrip');
+
+    const countdownOverlay = document.getElementById('countdownOverlay');
+    const countNum = document.getElementById('countNum');
+
+    /* ========== 状態 ========== */
     /** @type {{name:string, url:string, file:File}[]} */
     const videos = [];
+    let micStream = null, mediaRecorder = null, recChunks = [], voiceUrl = null;
 
-    // ------- ファイル受付（クリック） -------
+    /* ========== ユーティリティ ========== */
+    const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+    async function runCountdown(sec=3){
+      countdownOverlay.style.display='flex';
+      for (let i=sec;i>=1;i--){ countNum.textContent=String(i); await sleep(1000); }
+      countNum.textContent='Go!'; await sleep(300);
+      countdownOverlay.style.display='none';
+    }
+
+    /* ========== アップロード & 一覧表示 ========== */
     dropzone.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => {
+    fileInput.addEventListener('change', () => {
       if (fileInput.files && fileInput.files.length) {
-        handleFiles(fileInput.files);
-        // 同じファイルを連続選択できるようにリセット
-        fileInput.value = '';
+        handleFiles(fileInput.files); fileInput.value = '';
       }
     });
-
-    // ------- DnD 受付 -------
-    ;['dragenter','dragover'].forEach(type => {
-      dropzone.addEventListener(type, (e) => {
-        e.preventDefault(); e.stopPropagation();
-        dropzone.classList.add('dragover');
-      });
+    ['dragenter','dragover'].forEach(t => {
+      dropzone.addEventListener(t, e => { e.preventDefault(); e.stopPropagation(); dropzone.classList.add('dragover'); });
     });
-    ;['dragleave','drop'].forEach(type => {
-      dropzone.addEventListener(type, (e) => {
-        e.preventDefault(); e.stopPropagation();
-        dropzone.classList.remove('dragover');
-      });
+    ['dragleave','drop'].forEach(t => {
+      dropzone.addEventListener(t, e => { e.preventDefault(); e.stopPropagation(); dropzone.classList.remove('dragover'); });
     });
     dropzone.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      if (!dt) return;
-      const files = Array.from(dt.files || []).filter(f => f.type.startsWith('video/'));
+      const files = Array.from(e.dataTransfer?.files||[]).filter(f=>f.type.startsWith('video/'));
       if (files.length) handleFiles(files);
     });
 
-    // ------- ファイル処理 -------
-    function handleFiles(fileList) {
-      const arr = Array.from(fileList);
-      arr.forEach(file => {
-        if (!file.type.startsWith('video/')) return;
+    function handleFiles(fileList){
+      Array.from(fileList).forEach(file=>{
+        if(!file.type.startsWith('video/')) return;
         const url = URL.createObjectURL(file);
-        videos.push({ name: file.name, url, file });
+        videos.push({ name:file.name, url, file });
         appendCard({ name:file.name, url });
       });
-      // 最初の追加時は自動選択
-      if (!mainPlayer.src && videos.length) {
-        selectVideo(0);
-      }
+      if (!mainPlayer.src && videos.length) selectVideo(0);
     }
 
-    // ------- サムネカードを作る -------
-    function appendCard(item) {
+    function appendCard(item){
       const idx = videos.length - 1;
-
-      const card = document.createElement('div');
-      card.className = 'card';
-
-      const thumb = document.createElement('div');
-      thumb.className = 'thumb';
+      const card = document.createElement('div'); card.className='card';
+      const thumb = document.createElement('div'); thumb.className='thumb';
       const v = document.createElement('video');
-      v.src = item.url;
-      v.muted = true; v.loop = true; v.playsInline = true;
-      v.autoplay = true; // 自動でチラ見再生
+      v.src=item.url; v.muted=true; v.loop=true; v.playsInline=true; v.autoplay=true;
       thumb.appendChild(v);
-
-      const meta = document.createElement('div');
-      meta.className = 'meta';
-      const name = document.createElement('div');
-      name.className = 'name';
-      name.textContent = item.name;
-
-      const btn = document.createElement('div');
-      btn.className = 'btn';
-      btn.textContent = 'これを使う';
-      btn.addEventListener('click', () => selectVideo(idx));
-
-      meta.appendChild(name);
-      meta.appendChild(btn);
-
-      card.appendChild(thumb);
-      card.appendChild(meta);
-
+      const meta = document.createElement('div'); meta.className='meta';
+      const name = document.createElement('div'); name.className='name'; name.textContent=item.name;
+      const btn = document.createElement('div'); btn.className='btn'; btn.textContent='これを使う';
+      btn.addEventListener('click', ()=>selectVideo(idx));
+      meta.append(name, btn);
+      card.append(thumb, meta);
       strip.appendChild(card);
     }
 
-    // ------- 選択してメイン再生へ -------
-    function selectVideo(index) {
-      const item = videos[index];
-      if (!item) return;
-      // メインプレイヤーへ反映
+    function selectVideo(index){
+      const item = videos[index]; if(!item) return;
       const wasPlaying = !mainPlayer.paused;
-      const t = 0; // 選択時はとりあえず頭出し
-      mainPlayer.src = item.url;
-      mainPlayer.currentTime = t;
+      mainPlayer.src = item.url; mainPlayer.currentTime = 0;
       selectedName.textContent = item.name;
-      // 再生状態引き継ぎ（お好み）
       if (wasPlaying) mainPlayer.play().catch(()=>{});
+      // 同期ONなら、録音音声の位置も合わせておく
+      if (syncToggle.checked && voice.src) {
+        voice.currentTime = mainPlayer.currentTime; voice.playbackRate = mainPlayer.playbackRate;
+        if (!mainPlayer.paused) voice.play().catch(()=>{});
+      }
     }
 
-    // メモリ掃除（ページ離脱時に作ったURLを解放）
-    window.addEventListener('beforeunload', () => {
-      videos.forEach(v => URL.revokeObjectURL(v.url));
+    window.addEventListener('beforeunload', ()=>{ videos.forEach(v=>URL.revokeObjectURL(v.url)); if(voiceUrl) URL.revokeObjectURL(voiceUrl); });
+
+    /* ========== 録音（マイク） ========== */
+    micInitBtn.addEventListener('click', async ()=>{
+      try{
+        if (micStream) { micInitBtn.textContent='マイク準備済'; micInitBtn.disabled=true; recStartBtn.disabled=false; return; }
+        micStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+        mediaRecorder = new MediaRecorder(micStream);
+        mediaRecorder.ondataavailable = (e)=>{ if(e.data && e.data.size) recChunks.push(e.data); };
+        mediaRecorder.onstop = ()=>{
+          if (voiceUrl) URL.revokeObjectURL(voiceUrl);
+          const blob = new Blob(recChunks, { type:'audio/webm' });
+          recChunks = [];
+          voiceUrl = URL.createObjectURL(blob);
+          voice.src = voiceUrl;
+          recStatus.textContent = '録音完了';
+          recClearBtn.disabled = false;
+        };
+        micInitBtn.textContent='マイク準備済'; micInitBtn.disabled=true; recStartBtn.disabled=false;
+      }catch(e){ alert('マイクの初期化に失敗しました: ' + e.message); }
     });
 
-// ===== ステップ2：録音 + 同期再生 =====
-const micInitBtn = document.getElementById('micInit');
-const recStartBtn = document.getElementById('recStart');
-const recStopBtn  = document.getElementById('recStop');
-const recClearBtn = document.getElementById('recClear');
-const recStatus   = document.getElementById('recStatus');
-const syncToggle  = document.getElementById('syncToggle');
-const voice       = document.getElementById('voice');
+    // 同期再生（動画⇄音声）
+    (function bindSync(){
+      const v=mainPlayer, a=voice;
+      v.addEventListener('play',   ()=>{ if(!syncToggle.checked||!a.src) return; a.playbackRate=v.playbackRate; a.currentTime=v.currentTime; a.play().catch(()=>{}); });
+      v.addEventListener('pause',  ()=>{ if(!syncToggle.checked||!a.src) return; a.pause(); });
+      v.addEventListener('seeking',()=>{ if(!syncToggle.checked||!a.src) return; a.currentTime=v.currentTime; });
+      v.addEventListener('ratechange',()=>{ if(!syncToggle.checked||!a.src) return; a.playbackRate=v.playbackRate; });
+      v.addEventListener('ended',  ()=>{ if(!syncToggle.checked||!a.src) return; a.pause(); a.currentTime=0; });
+      syncToggle.addEventListener('change', ()=>{
+        if(!a.src) return;
+        if(syncToggle.checked){ a.playbackRate=v.playbackRate; a.currentTime=v.currentTime; if(!v.paused) a.play().catch(()=>{}); }
+        else { a.pause(); }
+      });
+    })();
 
-let micStream = null;
-let mediaRecorder = null;
-let recChunks = [];
-let voiceUrl = null;
+    // 録音開始（カウントダウン→動画と同時スタート）
+    recStartBtn.addEventListener('click', async ()=>{
+      if(!mediaRecorder){ alert('先に「マイク準備」を押してください'); return; }
+      if(!mainPlayer.src){ alert('先に動画を選んでください'); return; }
 
-// マイク初期化
-micInitBtn.addEventListener('click', async () => {
-  try {
-    // すでに初期化済みなら何もしない
-    if (micStream) { 
-      micInitBtn.textContent = 'マイク準備済';
-      micInitBtn.disabled = true;
-      recStartBtn.disabled = false;
-      return;
-    }
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(micStream);
-    mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size) recChunks.push(e.data); };
-    mediaRecorder.onstop = () => {
-      // 前回の録音は破棄（上書き）
-      if (voiceUrl) URL.revokeObjectURL(voiceUrl);
-      const blob = new Blob(recChunks, { type: 'audio/webm' });
+      // 上書きクリア
+      if (voiceUrl) { URL.revokeObjectURL(voiceUrl); voiceUrl=null; voice.removeAttribute('src'); }
       recChunks = [];
-      voiceUrl = URL.createObjectURL(blob);
-      voice.src = voiceUrl;
-      recStatus.textContent = '録音完了';
-      recClearBtn.disabled = false;
-    };
-    micInitBtn.textContent = 'マイク準備済';
-    micInitBtn.disabled = true;
-    recStartBtn.disabled = false;
-  } catch (e) {
-    alert('マイクの初期化に失敗しました: ' + e.message);
-  }
-});
 
-// 録音開始（前の録音は上書き）
-recStartBtn.addEventListener('click', () => {
-  if (!mediaRecorder) return;
-  // 既存の録音があればクリア
-  if (voiceUrl) { URL.revokeObjectURL(voiceUrl); voiceUrl = null; voice.removeAttribute('src'); }
-  recChunks = [];
-  try { mediaRecorder.start(100); } catch(_) { return; }
-  recStatus.textContent = '録音中…';
-  recStartBtn.disabled = true;
-  recStopBtn.disabled = false;
-  recClearBtn.disabled = true;
-});
+      // カウントダウン
+      recStatus.textContent='準備中…'; recStartBtn.disabled=true; recStopBtn.disabled=true;
+      await runCountdown(3);
 
-// 録音停止
-recStopBtn.addEventListener('click', () => {
-  if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
-  mediaRecorder.stop();
-  recStopBtn.disabled = true;
-  recStartBtn.disabled = false;
-});
+      try{
+        // 動画準備
+        mainPlayer.pause(); mainPlayer.currentTime=0; mainPlayer.playbackRate=1.0;
+        mainPlayer.muted = !(playVideoSound.checked); // チェックONなら動画の音を出す
 
-// 録り直し（音声消去）
-recClearBtn.addEventListener('click', () => {
-  if (voiceUrl) { URL.revokeObjectURL(voiceUrl); voiceUrl = null; }
-  voice.removeAttribute('src');
-  recStatus.textContent = '未録音';
-  recClearBtn.disabled = true;
-});
+        // 同時スタート
+        await mainPlayer.play().catch(()=>{});
+        mediaRecorder.start(100);
+        recStatus.textContent='録音中…';
+        recStopBtn.disabled=false;
 
-// ===== 同期再生：動画(mainPlayer)に音声(voice)を追従させる =====
-function bindSync() {
-  const v = mainPlayer, a = voice;
-  // 再生/一時停止
-  v.addEventListener('play', () => {
-    if (!syncToggle.checked || !a.src) return;
-    a.playbackRate = v.playbackRate;
-    a.currentTime = v.currentTime;
-    a.play().catch(()=>{ /* ユーザー操作起点が必要な場合あり */ });
-  });
-  v.addEventListener('pause', () => {
-    if (!syncToggle.checked || !a.src) return;
-    a.pause();
-  });
-  // シーク・レート変更・終了
-  v.addEventListener('seeking', () => {
-    if (!syncToggle.checked || !a.src) return;
-    a.currentTime = v.currentTime;
-  });
-  v.addEventListener('ratechange', () => {
-    if (!syncToggle.checked || !a.src) return;
-    a.playbackRate = v.playbackRate;
-  });
-  v.addEventListener('ended', () => {
-    if (!syncToggle.checked || !a.src) return;
-    a.pause();
-    a.currentTime = 0;
-  });
+        // 動画終了で自動停止
+        const onEnd=()=>{ if(mediaRecorder.state!=='inactive') mediaRecorder.stop(); recStopBtn.disabled=true; recStartBtn.disabled=false; mainPlayer.removeEventListener('ended', onEnd); };
+        mainPlayer.addEventListener('ended', onEnd);
+      }catch(e){
+        alert('録音開始に失敗：'+e.message);
+        recStatus.textContent='未録音'; recStartBtn.disabled=false; recStopBtn.disabled=true;
+      }
+    });
 
-  // 同期ON/OFFを切り替えた瞬間の合わせ込み
-  syncToggle.addEventListener('change', () => {
-    if (!a.src) return;
-    if (syncToggle.checked) {
-      a.playbackRate = v.playbackRate;
-      a.currentTime  = v.currentTime;
-      if (!v.paused) a.play().catch(()=>{});
-    } else {
-      a.pause();
+    // 録音停止
+    recStopBtn.addEventListener('click', ()=>{
+      if(!mediaRecorder || mediaRecorder.state==='inactive') return;
+      mediaRecorder.stop();
+      recStopBtn.disabled=true; recStartBtn.disabled=false;
+    });
+
+    // 録り直し
+    recClearBtn.addEventListener('click', ()=>{
+      if(voiceUrl){ URL.revokeObjectURL(voiceUrl); voiceUrl=null; }
+      voice.removeAttribute('src'); recStatus.textContent='未録音'; recClearBtn.disabled=true;
+    });
+
+    /* ========== MIX（動画 + 録音音声 → WebM） ========== */
+    /** @type {{name:string, url:string, blob:Blob}[]} */ const outputs=[];
+    mixBtn.addEventListener('click', async ()=>{
+      if(!mainPlayer.src){ alert('先に動画を選んでください。'); return; }
+      if(!voice.src){ alert('先に音声を録音してください。'); return; }
+
+      try{
+        mixBtn.disabled=true; mixStatus.textContent='MIX中…（しばらくお待ちください）';
+
+        const wasMuted = mainPlayer.muted;
+        mainPlayer.muted = true;
+
+        const vStream = mainPlayer.captureStream();
+        const [videoTrack] = vStream.getVideoTracks();
+        if(!videoTrack){ throw new Error('captureStream() から映像トラックを取得できません。'); }
+
+        const ac = new (window.AudioContext||window.webkitAudioContext)();
+        const dest = ac.createMediaStreamDestination();
+        const a = new Audio(); a.src=voice.src; a.playbackRate=mainPlayer.playbackRate; a.preload='auto';
+        const srcNode = ac.createMediaElementSource(a);
+        srcNode.connect(dest); // 録画用オーディオ出力
+
+        const composed = new MediaStream([videoTrack, ...dest.stream.getAudioTracks()]);
+        let recorder; const opt={ mimeType:'video/webm; codecs=vp9,opus' };
+        try{ recorder = new MediaRecorder(composed, opt); } catch{ recorder = new MediaRecorder(composed); }
+        const chunks=[]; recorder.ondataavailable=(e)=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+        const stopRecording=()=>new Promise(res=>{ recorder.onstop=()=>res(new Blob(chunks,{type:'video/webm'})); if(recorder.state!=='inactive') recorder.stop(); });
+
+        mainPlayer.currentTime=0; a.currentTime=0;
+        await mainPlayer.play().catch(()=>{}); await a.play().catch(()=>{});
+        recorder.start(250);
+
+        await new Promise(resolve=>{ const onEnd=()=>{ mainPlayer.removeEventListener('ended', onEnd); resolve(); }; mainPlayer.addEventListener('ended', onEnd); });
+        const outBlob = await stopRecording();
+
+        mainPlayer.pause(); a.pause(); srcNode.disconnect(); mainPlayer.muted = wasMuted;
+
+        const url = URL.createObjectURL(outBlob);
+        const name = (selectedName.textContent||'output') + '_' + new Date().toISOString().replace(/[:.]/g,'-') + '.webm';
+        outputs.push({ name, url, blob: outBlob });
+        while(outputs.length>3){ const old=outputs.shift(); try{ URL.revokeObjectURL(old.url); }catch{} }
+        renderOutputs(outputs);
+
+        mixStatus.textContent='MIX完了！'; mixBtn.disabled=false;
+      }catch(e){
+        console.error(e); alert('MIXに失敗しました：'+e.message);
+        mixStatus.textContent='エラー'; mixBtn.disabled=false;
+      }
+    });
+
+    function renderOutputs(list){
+      outStrip.innerHTML='';
+      list.forEach(item=>{
+        const card=document.createElement('div'); card.className='card';
+        const thumb=document.createElement('div'); thumb.className='thumb';
+        const v=document.createElement('video'); v.src=item.url; v.muted=true; v.loop=true; v.playsInline=true; v.autoplay=true;
+        thumb.appendChild(v);
+        const meta=document.createElement('div'); meta.className='meta';
+        const name=document.createElement('div'); name.className='name'; name.textContent=item.name;
+        const row=document.createElement('div'); row.style.display='flex'; row.style.gap='8px';
+        const useBtn=document.createElement('div'); useBtn.className='btn'; useBtn.textContent='これを使う';
+        useBtn.addEventListener('click', ()=>{
+          const wasPlaying=!mainPlayer.paused;
+          mainPlayer.src=item.url; mainPlayer.currentTime=0; selectedName.textContent=item.name;
+          if(wasPlaying) mainPlayer.play().catch(()=>{});
+        });
+        const dlBtn=document.createElement('a'); dlBtn.className='btn'; dlBtn.textContent='ダウンロード'; dlBtn.href=item.url; dlBtn.download=item.name;
+        row.append(useBtn, dlBtn); meta.append(name, row); card.append(thumb, meta); outStrip.appendChild(card);
+      });
     }
-  });
-}
-bindSync();
-
-// 新しい動画を選んだ時、同期ONなら音声の位置も合わせる
-function syncToHeadIfNeeded() {
-  if (syncToggle.checked && voice.src) {
-    voice.currentTime = mainPlayer.currentTime || 0;
-    voice.playbackRate = mainPlayer.playbackRate || 1;
-    if (!mainPlayer.paused) voice.play().catch(()=>{});
-  }
-}
-
-// 既存の selectVideo を呼ぶ箇所の直後で呼ばれるように、フックしておく
-const _selectVideoOriginal = selectVideo;
-selectVideo = function(index) {
-  _selectVideoOriginal(index);
-  // 動画切替直後に位置合わせ
-  syncToHeadIfNeeded();
-};
   </script>
-
-<script>
-// ===== ステップ3：MIX（動画 + 録音音声 → 1本のWebM） =====
-const mixBtn = document.getElementById('mixStart');
-const mixStatus = document.getElementById('mixStatus');
-const outStrip = document.getElementById('outStrip');
-
-// 完成動画（最大3件まで）
-/** @type {{name:string, url:string, blob:Blob}[]} */
-const outputs = [];
-
-mixBtn.addEventListener('click', async () => {
-  // 前提チェック
-  if (!mainPlayer.src) {
-    alert('先に動画を選んでください。');
-    return;
-  }
-  if (!voice.src) {
-    alert('先に音声を録音してください。');
-    return;
-  }
-
-  try {
-    mixBtn.disabled = true;
-    mixStatus.textContent = 'MIX中…（しばらくお待ちください）';
-
-    // 1) 映像トラックを取得（元動画の音は使わないのでミュート）
-    const wasMuted = mainPlayer.muted;
-    mainPlayer.muted = true;
-    const vStream = mainPlayer.captureStream();
-    const [videoTrack] = vStream.getVideoTracks();
-    if (!videoTrack) {
-      throw new Error('このブラウザは captureStream() から映像トラックを取得できません。');
-    }
-
-    // 2) 録音音声をAudioContextで流して、MediaStreamDestinationとして取り出す
-    const ac = new (window.AudioContext || window.webkitAudioContext)();
-    const dest = ac.createMediaStreamDestination();
-
-    // 再生用の隠しaudioを用意（voice要素を直接使うと再生UIが干渉しやすいので別インスタンス）
-    const a = new Audio();
-    a.src = voice.src;          // さっき録音した音声（blob URL）
-    a.playbackRate = mainPlayer.playbackRate;
-    a.crossOrigin = 'anonymous'; // blob URLなら不要だが念のため
-    a.preload = 'auto';
-    a.muted = false;            // ここはデスクトップ出力にはつながないので音は出ません
-
-    // AudioContextにルーティング
-    const srcNode = ac.createMediaElementSource(a);
-    srcNode.connect(dest);      // → 録音用
-    // srcNode.connect(ac.destination); // ← 同時にスピーカーにも出したいなら有効化
-
-    // 3) 合体ストリーム（映像 + マイク音声）を作成
-    const composed = new MediaStream([videoTrack, ...dest.stream.getAudioTracks()]);
-
-    // 4) MediaRecorderで録画開始（WebM）
-    const options = { mimeType: 'video/webm; codecs=vp9,opus' };
-    let recorder;
-    try {
-      recorder = new MediaRecorder(composed, options);
-    } catch (_) {
-      recorder = new MediaRecorder(composed); // ブラウザが指定を拒否したらフォールバック
-    }
-    const chunks = [];
-    recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
-    const stopRecording = () => new Promise(resolve => {
-      recorder.onstop = () => resolve(new Blob(chunks, { type: 'video/webm' }));
-      if (recorder.state !== 'inactive') recorder.stop();
-    });
-
-    // 5) 再生を頭出しして同時スタート
-    mainPlayer.currentTime = 0;
-    a.currentTime = 0;
-    // Safari等対策：ユーザー操作起点で一度でも再生しておくと安定
-    await mainPlayer.play().catch(()=>{});
-    await a.play().catch(()=>{});  // AudioContextの再生開始
-
-    recorder.start(250);
-
-    // 6) 動画の終了で録画を止める
-    const ended = new Promise(resolve => {
-      const onEnd = () => { mainPlayer.removeEventListener('ended', onEnd); resolve(); };
-      mainPlayer.addEventListener('ended', onEnd);
-    });
-    await ended;
-
-    const outBlob = await stopRecording();
-
-    // 後処理
-    mainPlayer.pause();
-    a.pause();
-    srcNode.disconnect();
-    // ac.close(); // 連続でMIXしたいなら閉じなくてもOK
-    mainPlayer.muted = wasMuted;
-
-    // 7) 完成品としてUIに追加（最大3件まで）
-    const url = URL.createObjectURL(outBlob);
-    const name = (selectedName.textContent || 'output') + '_' + new Date().toISOString().replace(/[:.]/g,'-') + '.webm';
-    outputs.push({ name, url, blob: outBlob });
-    while (outputs.length > 3) {
-      const old = outputs.shift();
-      try { URL.revokeObjectURL(old.url); } catch {}
-    }
-    renderOutputs();
-
-    mixStatus.textContent = 'MIX完了！';
-    mixBtn.disabled = false;
-  } catch (e) {
-    console.error(e);
-    alert('MIXに失敗しました：' + e.message);
-    mixStatus.textContent = 'エラー';
-    mixBtn.disabled = false;
-  }
-});
-
-// 完成動画ストリップの描画
-function renderOutputs() {
-  outStrip.innerHTML = '';
-  outputs.forEach((item, idx) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-
-    const thumb = document.createElement('div');
-    thumb.className = 'thumb';
-    const v = document.createElement('video');
-    v.src = item.url;
-    v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true;
-    thumb.appendChild(v);
-
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    const name = document.createElement('div');
-    name.className = 'name';
-    name.textContent = item.name;
-
-    const row = document.createElement('div');
-    row.style.display = 'flex';
-    row.style.gap = '8px';
-
-    const useBtn = document.createElement('div');
-    useBtn.className = 'btn';
-    useBtn.textContent = 'これを使う';
-    useBtn.addEventListener('click', () => {
-      const wasPlaying = !mainPlayer.paused;
-      mainPlayer.src = item.url;
-      mainPlayer.currentTime = 0;
-      selectedName.textContent = item.name;
-      if (wasPlaying) mainPlayer.play().catch(()=>{});
-    });
-
-    const dlBtn = document.createElement('a');
-    dlBtn.className = 'btn';
-    dlBtn.textContent = 'ダウンロード';
-    dlBtn.href = item.url;
-    dlBtn.download = item.name;
-
-    row.appendChild(useBtn);
-    row.appendChild(dlBtn);
-
-    meta.appendChild(name);
-    meta.appendChild(row);
-
-    card.appendChild(thumb);
-    card.appendChild(meta);
-    outStrip.appendChild(card);
-  });
-}
- </script>
-
 </body>
 </html>
