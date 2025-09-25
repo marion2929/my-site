@@ -5,6 +5,7 @@
   <title>まりおんのサイト | AIアプリ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
+
   <style>
     /* --- ページ専用の軽量スタイル --- */
     .app-wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
@@ -21,7 +22,7 @@
       display:block; position:relative;
     }
     .dropzone.dragover { background:#ecfff0; border-color:#2ca04a; }
-    .dropzone input[type="file"] { display: none; }  /* ←見せない */
+    .dropzone input[type="file"] { display: none; }
 
     /* 横スクロールのサムネリスト */
     .strip { display:flex; gap:12px; overflow-x:auto; padding:8px 4px; scroll-snap-type:x mandatory; }
@@ -85,7 +86,7 @@
       </div>
     </section>
 
-    <!-- ④ 録音（カウントダウン & 同時スタート & 同期再生） -->
+    <!-- ④ 録音 -->
     <section class="panel">
       <h3>④ 録音（動画と同期）</h3>
       <div class="info-row" style="margin-bottom:8px;">
@@ -132,9 +133,11 @@
   <!-- 共通ヘッダーの読み込み -->
   <script src="js/include.js" defer></script>
 
-  <!-- ページ専用JS（アップロード〜再生〜録音〜MIX 一式） -->
+  <!-- ページ専用JS：一つだけ！ -->
   <script>
-    /* ========== 参照 ========== */
+    /* =========================
+       参照
+    ========================= */
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
     const strip = document.getElementById('strip');
@@ -158,12 +161,35 @@
     const countdownOverlay = document.getElementById('countdownOverlay');
     const countNum = document.getElementById('countNum');
 
-    /* ========== 状態 ========== */
-    /** @type {{name:string, url:string, file:File}[]} */
+    /* =========================
+       状態
+    ========================= */
+    /** @type {{name:string, url:string, file:File|null, isSample?:boolean}[]} */
     const videos = [];
+    /** @type {{name:string, url:string, blob:Blob}[]} */
+    const outputs = [];
+
     let micStream = null, mediaRecorder = null, recChunks = [], voiceUrl = null;
 
-    /* ========== ユーティリティ ========== */
+    /* =========================
+       サンプル動画（videos/ に置く）
+    ========================= */
+    const SAMPLE_VIDEOS = [
+      { name: "111.mp4", url: "videos/111.mp4", isSample: true },
+      { name: "131.mp4", url: "videos/131.mp4", isSample: true },
+    ];
+
+    function loadSamples() {
+      SAMPLE_VIDEOS.forEach(item => {
+        videos.push({ name: item.name, url: item.url, file: null, isSample: true });
+        appendCard(videos.length - 1);
+      });
+      if (!mainPlayer.src && videos.length) selectVideo(0);
+    }
+
+    /* =========================
+       ユーティリティ
+    ========================= */
     const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
     async function runCountdown(sec=3){
       countdownOverlay.style.display='flex';
@@ -172,7 +198,9 @@
       countdownOverlay.style.display='none';
     }
 
-    /* ========== アップロード & 一覧表示 ========== */
+    /* =========================
+       アップロード & 一覧表示
+    ========================= */
     dropzone.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', () => {
       if (fileInput.files && fileInput.files.length) {
@@ -190,47 +218,46 @@
       if (files.length) handleFiles(files);
     });
 
-function handleFiles(fileList){
-  Array.from(fileList).forEach(file=>{
-    if(!file.type.startsWith('video/')) return;
-    const url = URL.createObjectURL(file);
-    videos.push({ name:file.name, url, file });
-    appendCard(videos.length - 1);   // ← ここを index 呼び出しに
-  });
-  if (!mainPlayer.src && videos.length) selectVideo(0);
-}
+    function handleFiles(fileList){
+      Array.from(fileList).forEach(file=>{
+        if(!file.type.startsWith('video/')) return;
+        const url = URL.createObjectURL(file);
+        videos.push({ name:file.name, url, file });
+        appendCard(videos.length - 1);  // index版で統一
+      });
+      if (!mainPlayer.src && videos.length) selectVideo(0);
+    }
 
-/* ------- サムネカードを作る（indexを渡す版） ------- */
-function appendCard(idx) {
-  const item = videos[idx];
-  if (!item) return;
+    // サムネカード（indexを渡す版）
+    function appendCard(idx) {
+      const item = videos[idx];
+      if (!item) return;
 
-  const card = document.createElement('div');
-  card.className = 'card';
+      const card = document.createElement('div');
+      card.className = 'card';
 
-  const thumb = document.createElement('div');
-  thumb.className = 'thumb';
-  const v = document.createElement('video');
-  v.src = item.url;
-  v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true;
-  thumb.appendChild(v);
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      const v = document.createElement('video');
+      v.src = item.url; v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true;
+      thumb.appendChild(v);
 
-  const meta = document.createElement('div');
-  meta.className = 'meta';
+      const meta = document.createElement('div');
+      meta.className = 'meta';
 
-  const name = document.createElement('div');
-  name.className = 'name';
-  name.textContent = item.name;
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = item.name;
 
-  const btn = document.createElement('div');
-  btn.className = 'btn';
-  btn.textContent = 'これを使う';
-  btn.addEventListener('click', () => selectVideo(idx));
+      const btn = document.createElement('div');
+      btn.className = 'btn';
+      btn.textContent = 'これを使う';
+      btn.addEventListener('click', () => selectVideo(idx));
 
-  meta.append(name, btn);
-  card.append(thumb, meta);
-  strip.appendChild(card);
-}
+      meta.append(name, btn);
+      card.append(thumb, meta);
+      strip.appendChild(card);
+    }
 
     function selectVideo(index){
       const item = videos[index]; if(!item) return;
@@ -245,9 +272,14 @@ function appendCard(idx) {
       }
     }
 
-    window.addEventListener('beforeunload', ()=>{ videos.forEach(v=>URL.revokeObjectURL(v.url)); if(voiceUrl) URL.revokeObjectURL(voiceUrl); });
+    window.addEventListener('beforeunload', ()=>{
+      videos.forEach(v=>{ if(!v.isSample) try{ URL.revokeObjectURL(v.url); }catch{} });
+      if(voiceUrl) URL.revokeObjectURL(voiceUrl);
+    });
 
-    /* ========== 録音（マイク） ========== */
+    /* =========================
+       録音（マイク）
+    ========================= */
     micInitBtn.addEventListener('click', async ()=>{
       try{
         if (micStream) { micInitBtn.textContent='マイク準備済'; micInitBtn.disabled=true; recStartBtn.disabled=false; return; }
@@ -328,8 +360,9 @@ function appendCard(idx) {
       voice.removeAttribute('src'); recStatus.textContent='未録音'; recClearBtn.disabled=true;
     });
 
-    /* ========== MIX（動画 + 録音音声 → WebM） ========== */
-    /** @type {{name:string, url:string, blob:Blob}[]} */ const outputs=[];
+    /* =========================
+       MIX（動画 + 録音音声 → WebM）
+    ========================= */
     mixBtn.addEventListener('click', async ()=>{
       if(!mainPlayer.src){ alert('先に動画を選んでください。'); return; }
       if(!voice.src){ alert('先に音声を録音してください。'); return; }
@@ -369,7 +402,7 @@ function appendCard(idx) {
         const name = (selectedName.textContent||'output') + '_' + new Date().toISOString().replace(/[:.]/g,'-') + '.webm';
         outputs.push({ name, url, blob: outBlob });
         while(outputs.length>3){ const old=outputs.shift(); try{ URL.revokeObjectURL(old.url); }catch{} }
-        renderOutputs(outputs);
+        renderOutputs();
 
         mixStatus.textContent='MIX完了！'; mixBtn.disabled=false;
       }catch(e){
@@ -378,52 +411,43 @@ function appendCard(idx) {
       }
     });
 
-    function renderOutputs(list){
+    function renderOutputs(){
       outStrip.innerHTML='';
-      list.forEach(item=>{
+      outputs.forEach(item=>{
         const card=document.createElement('div'); card.className='card';
         const thumb=document.createElement('div'); thumb.className='thumb';
         const v=document.createElement('video'); v.src=item.url; v.muted=true; v.loop=true; v.playsInline=true; v.autoplay=true;
         thumb.appendChild(v);
+
         const meta=document.createElement('div'); meta.className='meta';
         const name=document.createElement('div'); name.className='name'; name.textContent=item.name;
+
         const row=document.createElement('div'); row.style.display='flex'; row.style.gap='8px';
+
         const useBtn=document.createElement('div'); useBtn.className='btn'; useBtn.textContent='これを使う';
-useBtn.addEventListener('click', () => {
-+  // MIX動画を再生する前に同期音声を止める（二重再生防止）
-+  syncToggle.checked = false;
-+  try { voice.pause(); } catch(_) {}
+        useBtn.addEventListener('click', ()=>{
+          // 二重再生防止：同期音声を止めてから
+          syncToggle.checked = false;
+          try { voice.pause(); } catch(_) {}
 
-  const wasPlaying = !mainPlayer.paused;
-  mainPlayer.src = item.url;
-  mainPlayer.currentTime = 0;
-  selectedName.textContent = item.name;
-  if (wasPlaying) mainPlayer.play().catch(()=>{});
-});
+          const wasPlaying=!mainPlayer.paused;
+          mainPlayer.src=item.url; mainPlayer.currentTime=0; selectedName.textContent=item.name;
+          if(wasPlaying) mainPlayer.play().catch(()=>{});
+        });
 
+        const dlBtn=document.createElement('a'); dlBtn.className='btn'; dlBtn.textContent='ダウンロード'; dlBtn.href=item.url; dlBtn.download=item.name;
+
+        row.append(useBtn, dlBtn);
+        meta.append(name, row);
+        card.append(thumb, meta);
+        outStrip.appendChild(card);
+      });
     }
+
+    /* =========================
+       起動時：サンプルを読み込む
+    ========================= */
+    loadSamples();
   </script>
-<script>
-// === サンプル動画（app.html と同じ階層に /videos/ フォルダがある前提） ===
-const SAMPLE_VIDEOS = [
-  { name: "111.mp4", url: "videos/111.mp4", isSample: true },
-  { name: "131.mp4", url: "videos/131.mp4", isSample: true },
-];
-
-// アップロード済み & サンプルの一覧
-const videos = window.videos || []; // 既存があれば使う
-
-function loadSamples() {
-  SAMPLE_VIDEOS.forEach(item => {
-    videos.push({ name: item.name, url: item.url, file: null, isSample: true });
-    appendCard(videos.length - 1);
-  });
-  if (!mainPlayer.src && videos.length) selectVideo(0);
-}
-
-// 初回ロード時に一度だけ呼ぶ
-window.addEventListener("DOMContentLoaded", loadSamples);
-</script>
-
 </body>
 </html>
