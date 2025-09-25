@@ -190,31 +190,47 @@
       if (files.length) handleFiles(files);
     });
 
-    function handleFiles(fileList){
-      Array.from(fileList).forEach(file=>{
-        if(!file.type.startsWith('video/')) return;
-        const url = URL.createObjectURL(file);
-        videos.push({ name:file.name, url, file });
-        appendCard({ name:file.name, url });
-      });
-      if (!mainPlayer.src && videos.length) selectVideo(0);
-    }
+function handleFiles(fileList){
+  Array.from(fileList).forEach(file=>{
+    if(!file.type.startsWith('video/')) return;
+    const url = URL.createObjectURL(file);
+    videos.push({ name:file.name, url, file });
+-   appendCard({ name:file.name, url });
++   appendCard(videos.length - 1);
+  });
+  if (!mainPlayer.src && videos.length) selectVideo(0);
+}
 
-    function appendCard(item){
-      const idx = videos.length - 1;
-      const card = document.createElement('div'); card.className='card';
-      const thumb = document.createElement('div'); thumb.className='thumb';
-      const v = document.createElement('video');
-      v.src=item.url; v.muted=true; v.loop=true; v.playsInline=true; v.autoplay=true;
-      thumb.appendChild(v);
-      const meta = document.createElement('div'); meta.className='meta';
-      const name = document.createElement('div'); name.className='name'; name.textContent=item.name;
-      const btn = document.createElement('div'); btn.className='btn'; btn.textContent='これを使う';
-      btn.addEventListener('click', ()=>selectVideo(idx));
-      meta.append(name, btn);
-      card.append(thumb, meta);
-      strip.appendChild(card);
-    }
+    // ------- サムネカードを作る（indexを渡す版） -------
+function appendCard(idx) {
+  const item = videos[idx];
+  if (!item) return;
+
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb';
+  const v = document.createElement('video');
+  v.src = item.url;
+  v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true;
+  thumb.appendChild(v);
+
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  const name = document.createElement('div');
+  name.className = 'name';
+  name.textContent = item.name;
+
+  const btn = document.createElement('div');
+  btn.className = 'btn';
+  btn.textContent = 'これを使う';
+  btn.addEventListener('click', () => selectVideo(idx));
+
+  meta.append(name, btn);
+  card.append(thumb, meta);
+  strip.appendChild(card);
+}
 
     function selectVideo(index){
       const item = videos[index]; if(!item) return;
@@ -383,5 +399,27 @@
       });
     }
   </script>
+<script>
+  // サンプル動画リスト
+  const SAMPLE_VIDEOS = [
+    { name: "111.mp4", url: "videos/111.mp4" },
+    { name: "131.mp4", url: "videos/131.mp4" },
+  ];
+
+  // 起動時にサンプルを一覧へ追加
+  function loadSamples() {
+    SAMPLE_VIDEOS.forEach(item => {
+      videos.push({ name: item.name, url: item.url, file: null, isSample: true });
+      appendCard(videos.length - 1); // いま追加したindexでカード生成
+    });
+    if (!mainPlayer.src && videos.length) {
+      selectVideo(0); // 最初のサンプルを自動選択
+    }
+  }
+
+  // ページが読み込まれたらサンプル読み込み
+  window.addEventListener("DOMContentLoaded", loadSamples);
+</script>
+
 </body>
 </html>
