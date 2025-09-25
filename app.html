@@ -195,13 +195,12 @@ function handleFiles(fileList){
     if(!file.type.startsWith('video/')) return;
     const url = URL.createObjectURL(file);
     videos.push({ name:file.name, url, file });
--   appendCard({ name:file.name, url });
-+   appendCard(videos.length - 1);
+    appendCard(videos.length - 1);   // ← ここを index 呼び出しに
   });
   if (!mainPlayer.src && videos.length) selectVideo(0);
 }
 
-    // ------- サムネカードを作る（indexを渡す版） -------
+/* ------- サムネカードを作る（indexを渡す版） ------- */
 function appendCard(idx) {
   const item = videos[idx];
   if (!item) return;
@@ -218,6 +217,7 @@ function appendCard(idx) {
 
   const meta = document.createElement('div');
   meta.className = 'meta';
+
   const name = document.createElement('div');
   name.className = 'name';
   name.textContent = item.name;
@@ -404,25 +404,25 @@ useBtn.addEventListener('click', () => {
     }
   </script>
 <script>
-  // サンプル動画リスト
-  const SAMPLE_VIDEOS = [
-    { name: "111.mp4", url: "videos/111.mp4" },
-    { name: "131.mp4", url: "videos/131.mp4" },
-  ];
+// === サンプル動画（app.html と同じ階層に /videos/ フォルダがある前提） ===
+const SAMPLE_VIDEOS = [
+  { name: "111.mp4", url: "videos/111.mp4", isSample: true },
+  { name: "131.mp4", url: "videos/131.mp4", isSample: true },
+];
 
-  // 起動時にサンプルを一覧へ追加
-  function loadSamples() {
-    SAMPLE_VIDEOS.forEach(item => {
-      videos.push({ name: item.name, url: item.url, file: null, isSample: true });
-      appendCard(videos.length - 1); // いま追加したindexでカード生成
-    });
-    if (!mainPlayer.src && videos.length) {
-      selectVideo(0); // 最初のサンプルを自動選択
-    }
-  }
+// アップロード済み & サンプルの一覧
+const videos = window.videos || []; // 既存があれば使う
 
-  // ページが読み込まれたらサンプル読み込み
-  window.addEventListener("DOMContentLoaded", loadSamples);
+function loadSamples() {
+  SAMPLE_VIDEOS.forEach(item => {
+    videos.push({ name: item.name, url: item.url, file: null, isSample: true });
+    appendCard(videos.length - 1);
+  });
+  if (!mainPlayer.src && videos.length) selectVideo(0);
+}
+
+// 初回ロード時に一度だけ呼ぶ
+window.addEventListener("DOMContentLoaded", loadSamples);
 </script>
 
 </body>
