@@ -389,14 +389,18 @@ function appendCard(idx) {
         const name=document.createElement('div'); name.className='name'; name.textContent=item.name;
         const row=document.createElement('div'); row.style.display='flex'; row.style.gap='8px';
         const useBtn=document.createElement('div'); useBtn.className='btn'; useBtn.textContent='これを使う';
-        useBtn.addEventListener('click', ()=>{
-          const wasPlaying=!mainPlayer.paused;
-          mainPlayer.src=item.url; mainPlayer.currentTime=0; selectedName.textContent=item.name;
-          if(wasPlaying) mainPlayer.play().catch(()=>{});
-        });
-        const dlBtn=document.createElement('a'); dlBtn.className='btn'; dlBtn.textContent='ダウンロード'; dlBtn.href=item.url; dlBtn.download=item.name;
-        row.append(useBtn, dlBtn); meta.append(name, row); card.append(thumb, meta); outStrip.appendChild(card);
-      });
+useBtn.addEventListener('click', () => {
++  // MIX動画を再生する前に同期音声を止める（二重再生防止）
++  syncToggle.checked = false;
++  try { voice.pause(); } catch(_) {}
+
+  const wasPlaying = !mainPlayer.paused;
+  mainPlayer.src = item.url;
+  mainPlayer.currentTime = 0;
+  selectedName.textContent = item.name;
+  if (wasPlaying) mainPlayer.play().catch(()=>{});
+});
+
     }
   </script>
 <script>
